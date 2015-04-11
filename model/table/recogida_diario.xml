@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : recogida_diario.xml
+    Description:
+        Estructura de la tabla recogidas_diario.
+-->
+<tabla>
+    <columna>
+        <nombre>recogida_id</nombre>
+        <tipo>serial</tipo>
+        <nulo>NO</nulo>
+        <defecto>nextval('recogida_diario_recogida_id_seq'::regclass)</defecto>
+    </columna>
+    <columna>
+        <nombre>fecha</nombre>
+        <tipo>date</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>entidad_id</nombre>
+        <tipo>int(11)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>material_id</nombre>
+        <tipo>int(11)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>entrada</nombre>
+        <tipo>double precision</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>salida</nombre>
+        <tipo>double precision</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>tipo_id</nombre>
+        <tipo>tinyint(4)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>matricula</nombre>
+        <tipo>varchar(20)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>ayunta_id</nombre>
+        <tipo>int(11)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>ecovidrio</nombre>
+        <tipo>tinyint(4)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>notas</nombre>
+        <tipo>text</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <restriccion>
+        <nombre>recogida_diario_pkey</nombre>
+        <consulta>PRIMARY KEY (recogida_id)</consulta>
+    </restriccion>
+</tabla>

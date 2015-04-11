@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : recogida_entidad.xml
+    Description:
+        Estructura de la tabla recogida_entidad.
+-->
+<tabla>
+    <columna>
+        <nombre>entidad_id</nombre>
+        <tipo>serial</tipo>
+        <nulo>NO</nulo>
+        <defecto>nextval('recogida_entidad_entidad_id_seq'::regclass)</defecto>
+    </columna>
+    <columna>
+        <nombre>entidad_nombre</nombre>
+        <tipo>varchar(120)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>entidad_cifnif</nombre>
+        <tipo>varchar(20)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>entidad_codpostal</nombre>
+        <tipo>varchar(20)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>entidad_telefono</nombre>
+        <tipo>varchar(80)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <columna>
+        <nombre>entidad_tipo</nombre>
+        <tipo>int(11)</tipo>
+        <nulo>YES</nulo>
+    </columna>
+    <restriccion>
+        <nombre>recogida_entidad_pkey</nombre>
+        <consulta>PRIMARY KEY (entidad_id)</consulta>
+    </restriccion>
+</tabla>

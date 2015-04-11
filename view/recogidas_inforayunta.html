@@ -1,0 +1,255 @@
+{include="header"}
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+   // Load the Visualization API and the piechart package.
+   google.load('visualization', '1.0', {'packages':['corechart']});
+   
+   // Set a callback to run when the Google Visualization API is loaded.
+   google.setOnLoadCallback(drawChart);
+   
+   // Callback that creates and populates a data table,
+   // instantiates the pie chart, passes in the data and
+   // draws it.
+   function drawChart()
+   {
+      // Create the data table.
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'mes');
+      data.addColumn('number', 'carton entrada');
+      data.addColumn('number', 'vidrio entrada');
+      data.addColumn('number', 'vidrio salida');      
+      data.addRows([
+      {loop="$fsc->stats_materiales_month()"}
+         ['{$value['month']}', {$value['total_carton_entrada']}, {$value['total_vidrio_entrada']}, {$value['total_vidrio_salida']}],
+      {/loop}
+      ]);
+            
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.ColumnChart(document.getElementById('chart_recogidas_materiales'));
+      var options = {
+          colors: ['#b88c00', '#17c200', '#e00000'],
+          isStacked: false,
+          hAxis: {
+            direction: 1,
+        }
+      };
+      chart.draw(data, options);
+      
+      // ***********************************************
+      // Create the data table.
+      var data2 = new google.visualization.DataTable();
+      data2.addColumn('string', 'mes');
+      data2.addColumn('number', 'entrada');
+      data2.addColumn('number', 'salida');
+      data2.addColumn('number', 'almacenado');
+      data2.addRows([
+      {loop="$fsc->stats_materiales_month(1)"}
+         ['{$value['month']}', {$value['total_carton_entrada']}, {$value['total_carton_salida']}, {$value['almacenado_carton']}],
+      {/loop}
+      ]);
+      
+      // Instantiate and draw our chart, passing in some options.
+      var chart2 = new google.visualization.AreaChart(document.getElementById('chart_carton_month'));
+      chart2.draw(data2);    
+      
+      // ***********************************************
+      // Create the data table.
+      var data3 = new google.visualization.DataTable();
+      data3.addColumn('string', 'mes');
+      data3.addColumn('number', 'entrada');
+      data3.addColumn('number', 'salida');
+      data3.addColumn('number', 'almacenado');
+      data3.addRows([
+      {loop="$fsc->stats_materiales_month(2)"}
+         ['{$value['month']}', {$value['total_chapa_entrada']}, {$value['total_chapa_salida']}, {$value['almacenado_chapa']}],
+      {/loop}
+      ]);
+      
+      // Instantiate and draw our chart, passing in some options.
+      var chart3 = new google.visualization.AreaChart(document.getElementById('chart_chapa_month'));
+      chart3.draw(data3); 
+      
+      // ***********************************************
+      // Create the data table.
+      var data4 = new google.visualization.DataTable();
+      data4.addColumn('string', 'mes');
+      data4.addColumn('number', 'entrada');
+      data4.addColumn('number', 'salida');
+      data4.addColumn('number', 'almacenado');
+      data4.addRows([
+      {loop="$fsc->stats_materiales_month(3)"}
+         ['{$value['month']}', {$value['total_vidrio_entrada']}, {$value['total_vidrio_salida']}, {$value['almacenado_vidrio']}],
+      {/loop}
+      ]);
+      
+      // Instantiate and draw our chart, passing in some options.
+      var chart4 = new google.visualization.AreaChart(document.getElementById('chart_vidrio_month'));
+      chart4.draw(data4); 
+    }
+</script>
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist">
+   <li class="active"><a href="#home" role="tab" data-toggle="tab">Gráficos</a></li>
+   <li><a href="#listados" role="tab" data-toggle="tab">Listados</a></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+   <div class="tab-pane active" id="home">
+       <div class="container-fluid" style="margin-top: 15px;">
+          <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Recogidas Materiales de los últimos meses - AYUNTAMIENTOS</h3>
+                  </div>
+                  <div class="panel-body">
+                     <div id="chart_recogidas_materiales"></div>
+                  </div>
+               </div>
+            </div>
+          </div> 
+           
+         <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Recogidas Vidrio - AYUNTAMIENTOS</h3>
+                  </div>
+                  <div class="panel-body">
+                     <div id="chart_vidrio_month"></div>
+                  </div>
+               </div>
+            </div>
+         </div>           
+           
+         <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Recogidas Carton - AYUNTAMIENTOS</h3>
+                  </div>
+                  <div class="panel-body">
+                     <div id="chart_carton_month"></div>
+                  </div>
+               </div>
+            </div>
+         </div>           
+           
+         <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Recogidas Chapa - AYUNTAMIENTOS</h3>
+                  </div>
+                  <div class="panel-body">
+                     <div id="chart_chapa_month"></div>
+                  </div>
+               </div>
+            </div>
+         </div>
+           
+       </div>
+   </div>
+
+    <div class="tab-pane" id="listados">
+      <div class="container-fluid" style="margin-top: 15px;">
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6">
+               <form action="{$fsc->url()}" method="post" target="_blank" class="form">
+                  <input type="hidden" name="listado" value="recogidas_filtro"/>
+                  <div class="panel panel-info">
+                     <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas por Filtros Agrupados</h3>
+                     </div>
+                     <div class="panel-body">
+                        <div class="form-group col-md-3">
+                           Desde:
+                           <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Hasta:
+                           <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Filtro:
+                           <select class="form-control" name="filtro">
+                              <option value="---">Todas</option>
+                              <option value="---">Ayunt</option>
+                              <option value="---">Empresa</option>
+                              <option value="---">Material</option>
+                              <option value="---">Ecovidrio</option>
+                              <option value="---">Nosotros</option>
+                              
+                           </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Generar:
+                           <select name="generar" class="form-control">
+                              <option value="pdf">PDF</option>
+                              <option value="csv">CSV</option>
+                           </select>
+                        </div>
+                     </div>
+                     <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                           <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                     </div>
+                  </div>
+               </form>
+            </div>
+              
+            <div class="col-lg-6 col-md-6 col-sm-6">
+               <form action="{$fsc->url()}" method="post" target="_blank" class="form">
+                  <input type="hidden" name="listado" value="recogidas_listado"/>
+                  <div class="panel panel-info">
+                     <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas Listado</h3>
+                     </div>
+                     <div class="panel-body">
+                        <div class="form-group col-md-3">
+                           Desde:
+                           <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}" size="12"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Hasta:
+                           <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}" size="12"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Orden:
+                           <select class="form-control" name="orden">
+                              <option value="---">Todas</option>
+                              <option value="---">Fecha</option>
+                              <option value="---">Empresa</option>
+                              <option value="---">Material</option>
+                              <option value="---">Matricula</option>
+                           </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                           Generar:
+                           <select name="generar" class="form-control">
+                              <option value="pdf">PDF</option>
+                              <option value="csv">CSV</option>
+                           </select>
+                        </div>
+                     </div>
+                     <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                           <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                     </div>
+                  </div>
+               </form>
+            </div>
+              
+          </div>
+      </div>
+    </div>
+    
+</div>
+
+{include="footer"}
+

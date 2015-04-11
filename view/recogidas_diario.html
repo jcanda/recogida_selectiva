@@ -1,0 +1,133 @@
+{include="header"}
+
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.min.js"></script>
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.widgets.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        document.f_busca_entidad.buscar.focus();
+        
+        $("#myTable").tablesorter({
+            widgets        : ['zebra', 'columns'],
+            usNumberFormat : false,
+            sortReset      : true,
+            sortRestart    : true
+        });
+    });    
+</script>
+
+<div class="container-fluid" style="margin-top: 10px; margin-bottom: 10px;">
+   <div class="row">
+      <!-- Estos botones se muestran siempre, ocupando 2 o 6 de las 12 columnas -->
+      <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+         <a href="{$fsc->url()}" class="btn btn-sm btn-default">
+            <span class="glyphicon glyphicon-refresh"></span>
+         </a>
+         <a href="{$fsc->url()}&opcion=nuevarecogida" id="b_nueva_recogida" class="btn btn-sm btn-success">
+            <span class="glyphicon glyphicon-pencil"></span> &nbsp; Nueva Recogida
+         </a>
+      </div>
+      <!-- Se muestra si la resolución es LG, sino se oculta -->
+      <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12 text-right">
+         <div class="hidden-lg hidden-md"><br/></div>
+         <form id="f_busca_entidad" name="f_busca_entidad" action="{$fsc->url()}" method="post" class="form form-inline">
+            <div class="form-group">
+               <input type="text" class="form-control" name="buscar" size="10" placeholder="Buscar"/>
+            </div>
+            <div class="form-group">
+                <select name="filtro_material" class="form-control" onchange="this.form.submit();">
+                    <option value="todos"{if="$fsc->busqueda['material']=='0'"} selected{/if}>Todos</option>
+                    {loop="fsc->listar_materiales()"}
+                    <option value="{$value['material_id']}" {if="$fsc->busqueda['material']==$value['material_id']"} selected{/if}>{$value['nombre_material']}</option>
+                    {/loop}
+                </select>                
+            </div>
+            <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
+               <span class="glyphicon glyphicon-search"></span>
+            </button>
+         </form>
+      </div>
+   </div>
+</div>
+
+
+
+<div class="table-responsive">
+   <table class="table table-hover" id="myTable">
+      <thead>
+         <tr>
+            <th class="text-left"><a href="#">N Recogida</a></th>
+            <th class="text-left">Fecha</th>
+            <th class="text-left">Empresa</th>
+            <th class="text-left">Material</th>
+            <th class="text-left">Entrada</th>
+            <th class="text-left">Salida</th>
+            <th class="text-left">Tipo</th>
+            <th class="text-left">Matricula</th> 
+            <th class="text-left">Ayuntamiento</th>
+            <th class="text-left">Ecovodrio</th> 
+            <th class="text-left">Notas</th> 
+         </tr>
+      </thead>
+      <!--{$total_entrada=0}-->
+      <!--{$total_salida=0}-->      
+      {loop="$fsc->resultado"}
+      <tr class="clickableRow{if condition="$value->material_id==1"} bg-success {elseif condition="$value->material_id==2"} bg-danger {/if}" href="{$value->url()}">
+         <td><b>{$value->recogida_id}</b></td>
+         <td>{$value->fecha}</td>
+         <td>{$value->nombre_empresa()}</td>
+         <td>{$value->nombre_material()}</td>
+         <td>{$fsc->show_numero($value->entrada)}</td>
+         <td>{$fsc->show_numero($value->salida)}</td>
+         <td>{$value->nombre_tipo()}</td>
+         <td>{$value->matricula}</td>
+         <td>{$value->nombre_ayunta()}</td>
+         <td class="text-left">
+             {if condition="$value->ecovidrio"} 
+                &nbsp; <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+             {else} 
+                &nbsp; <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> 
+             {/if}
+         </td>         
+         <td>{$value->notas}</td>
+         <!--{$total_entrada+=$value->entrada}-->
+         <!--{$total_salida+=$value->salida}-->
+      </tr>
+      {else}
+      <tr class="bg-warning">
+         <td colspan="9">Sin resultados.</td>
+      </tr>
+      {/loop}
+      {if="$fsc->offset==0"}
+      <tr>
+         <td colspan="4"></td>
+         <td class="text-left"><b>{$fsc->show_numero($total_entrada)}</b></td>
+         <td class="text-left"><b>{$fsc->show_numero($total_salida)}</b></td>
+         <td colspan="5"></td>
+      </tr>
+      {/if}      
+      
+   </table>
+</div>
+
+<ul class="pager">
+   {if="$fsc->anterior_url()!=''"}
+   <li class="previous">
+      <a href="{$fsc->anterior_url()}">
+         <span class="glyphicon glyphicon-chevron-left"></span> &nbsp; Anteriores
+      </a>
+   </li>
+   {/if}
+   
+   {if="$fsc->siguiente_url()!=''"}
+   <li class="next">
+      <a href="{$fsc->siguiente_url()}">
+         Siguientes &nbsp; <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+   </li>
+   {/if}
+</ul>
+
+{include="footer"}
+

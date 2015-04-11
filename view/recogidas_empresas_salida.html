@@ -1,0 +1,104 @@
+{include="header"}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        document.f_edita_entidad.articulo_id.focus();
+    });
+</script>
+
+<form name="f_edita_entidad" action="{$fsc->url()}&opcion=nueva_salida&codcliente={$fsc->resultado->codcliente}" method="post" class="form">
+    <div class="container-fluid hidden-print">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 style="margin-bottom: 0px;">
+                    <a href="{$fsc->url()}">Recogidas Empresas</a> /
+                    Nueva SALIDA
+                </h2>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    Cliente: 
+                    <input class="form-control" type="text" name="nombre_cliente" value="{$fsc->resultado->nombre}" disabled="disabled" />
+                </div>
+            </div> 
+            <div class="col-md-3">
+                <div class="form-group">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    Fecha:
+                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->today()}"/>
+                </div>
+            </div>            
+            <div class="col-md-3">
+                <div class="form-group">
+                    Articulo:
+                    <select name="articulo_id" class="form-control">
+                        <option value="0">-</option>
+                        {loop="$fsc->articulos"}
+                            {if="$value->referencia == $fsc->resultado->articulo_id"}
+                                <option value="{$value->referencia}" selected>{$value->descripcion}</option>
+                            {else}
+                                <option value="{$value->referencia}">{$value->descripcion}</option>
+                            {/if}
+                        {/loop}
+                    </select>                   
+                </div>
+            </div>  
+            <div class="col-md-3">
+                <div class="form-group">
+                    Matricula:
+                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
+                </div>
+            </div> 
+        </div>
+        
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    Entrada:
+                    <input class="form-control" type="text" name="entrada" value="{$fsc->resultado->entrada}" disabled="disabled"/>
+                </div>
+            </div> 
+            <div class="col-md-3">
+                <div class="form-group">
+                    Salida:
+                    <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida}"/>
+                </div>
+            </div> 
+            <div class="col-md-6">
+                <div class="form-group">
+                    Notas:
+                    <textarea class="form-control" name="notas" rows="2">{$fsc->resultado->notas}</textarea>
+                </div>
+            </div> 
+           
+        </div>       
+    </div>
+    
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-md-12">
+            <a href="{$fsc->url()}" class="btn btn-sm btn-default">
+               <span class="glyphicon glyphicon-remove"></span> &nbsp; Cancelar
+            </a>
+            <button type="submit" class="btn btn-sm btn-primary pull-right" onclick="this.disabled = true; this.form.submit();">
+               <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
+            </button>
+         </div>
+      </div>
+   </div>    
+
+</form>
+
+{include="footer"}
+
+
+
+
+
