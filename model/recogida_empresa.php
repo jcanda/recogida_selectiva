@@ -79,8 +79,7 @@ class recogida_empresa extends fs_model
                VALUES (" . $this->var2str($this->fecha) . "," . $this->var2str($this->empresa_id) . "," . $this->var2str($this->empresa_nombre) . ",
                " . $this->var2str($this->articulo_id) . "," . $this->var2str($this->entrada_empresa) . ",
                " . $this->var2str($this->salida_empresa) . "," . $this->var2str($this->tipo_id) . ",
-               " . $this->var2str($this->matricula) . ",   
-               " . $this->var2str($this->notas) . ");";
+               " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ");";
 
                 if ($this->db->exec($sql)) {
                     $this->recogida_id = $this->db->lastval();

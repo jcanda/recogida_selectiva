@@ -8,7 +8,7 @@
                 window.location.href = '{$fsc->url()}&delete={$fsc->resultado->recogida_id}';
         });
 
-        document.f_edita_entidad.entidad_id.focus();
+        document.f_edita_entidad.articulo_id.focus();
     });
 </script>
 
@@ -37,7 +37,7 @@
         <div class="row">
             <div class="col-md-12">
                 <h2 style="margin-bottom: 0px;">
-                    <a href="{$fsc->url()}">Recogidas Ayuntamientos</a> /
+                    <a href="{$fsc->url()}">Recogidas Empresas</a> /
                     Editando {$fsc->resultado->recogida_id}
                 </h2>
             </div>
@@ -50,15 +50,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                     Empresa: 
-                    <select name="entidad_id" class="form-control">
-                        {loop="$fsc->listar_entidades_xtipo(2)"}
-                        {if="$value->entidad_id == $fsc->resultado->entidad_id"}
-                        <option value="{$value->entidad_id}" selected>{$value->entidad_nombre}</option>
-                        {else}
-                        <option value="{$value->entidad_id}">{$value->entidad_nombre}</option>
-                        {/if}
-                        {/loop}
-                    </select>
+                    <input class="form-control" type="text" name="nombre_proveedor" value="{$fsc->resultado->empresa_nombre}" disabled="disabled" />
                 </div>
             </div> 
             <div class="col-md-3">
@@ -70,32 +62,25 @@
             </div>            
             <div class="col-md-3">
                 <div class="form-group">
-                    Material:
-                    <select name="material_id" class="form-control">
-                        {loop="$fsc->listar_materiales()"}
-                        {if="$value['material_id'] == $fsc->resultado->material_id"}
-                        <option value="{$value['material_id']}" selected>{$value['nombre_material']}</option>
-                        {else}
-                        <option value="{$value['material_id']}">{$value['nombre_material']}</option>
-                        {/if}
+                    Articulo:
+                    <select name="articulo_id" class="form-control">
+                        <option value="0">-</option>
+                        {loop="$fsc->articulos"}
+                            {if="$value->referencia == $fsc->resultado->articulo_id"}
+                                <option value="{$value->referencia}" selected>{$value->descripcion}</option>
+                            {else}
+                                <option value="{$value->referencia}">{$value->descripcion}</option>
+                            {/if}
                         {/loop}
                     </select>                   
                 </div>
             </div>  
             <div class="col-md-3">
                 <div class="form-group">
-                    Tipo:
-                    <select name="tipo_id" class="form-control">
-                        {loop="$fsc->listar_tipos()"}
-                        {if="$value['tipo_id'] == $fsc->resultado->tipo_id"}
-                        <option value="{$value['tipo_id']}" selected>{$value['nombre_tipo']}</option>
-                        {else}
-                        <option value="{$value['tipo_id']}">{$value['nombre_tipo']}</option>
-                        {/if}
-                        {/loop}
-                    </select>                      
+                    Matricula:
+                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
                 </div>
-            </div>  
+            </div>   
         </div>
         
         
@@ -103,55 +88,22 @@
             <div class="col-md-3">
                 <div class="form-group">
                     Entrada:
-                    <input class="form-control" type="text" name="entrada" value="{$fsc->resultado->entrada}"/>
+                    <input class="form-control" type="text" name="entrada" value="{$fsc->resultado->entrada_empresa}" {if="$fsc->resultado->tipo_id==2"}disabled="disabled" {/if}/>
                 </div>
             </div> 
             <div class="col-md-3">
                 <div class="form-group">
                     Salida:
-                    <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida}"/>
+                    <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida_empresa}" {if="$fsc->resultado->tipo_id==1"}disabled="disabled" {/if}/>
                 </div>
             </div> 
-            <div class="col-md-3">
-                <div class="form-group">
-                    Matricula:
-                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
-                </div>
-            </div> 
-            <div class="col-md-3">
-                <div class="form-group">
-                    Ayuntamiento: 
-                    <select name="ayunta_id" class="form-control">
-                        <option value="0">-</option>
-                        {loop="$fsc->listar_entidades_xtipo(1)"}
-                        {if="$value->entidad_id == $fsc->resultado->ayunta_id"}
-                        <option value="{$value->entidad_id}" selected>{$value->entidad_nombre}</option>
-                        {else}
-                        <option value="{$value->entidad_id}">{$value->entidad_nombre}</option>
-                        {/if}
-                        {/loop}
-                    </select>
-                </div>
-            </div>            
-        </div>
-        <!--/Quinta columna-->
-        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     Notas:
                     <textarea class="form-control" name="notas" rows="2">{$fsc->resultado->notas}</textarea>
                 </div>
-            </div>
-            <div class="col-lg-3">
-                <span class="glyphicon glyphicon-ok"></span>
-                Ecovidrio:                       
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="ecovidrio" value="TRUE" {if condition="$fsc->resultado->ecovidrio"} checked="checked" {/if}/>DISPONIBLE (Si/No)
-                    </label>
-                </div>
-            </div>             
-        </div>        
+            </div>           
+        </div>       
     </div>
 
 </form>
