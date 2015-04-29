@@ -184,7 +184,22 @@ class recogidas_empresas extends fs_controller
             
         }elseif (isset($_GET['delete'])){    
             //PAra eliminar recogida
-            
+            $this->resultado = $this->recogidas_model->get($_GET['delete']);
+            if ($this->resultado) {
+                if ($this->resultado->delete()) {
+                    $this->new_message('Recogida de empresa eliminada correctamente.');
+                } else
+                    $this->new_error_msg('Imposible eliminar la recogida a esta empresa.');
+            } else
+                $this->new_error_msg('Recogida no encontrada.');
+
+                $this->offset = 0;
+                
+                if (isset($_GET['offset']))
+                    $this->offset = intval($_GET['offset']); 
+                
+                $this->resultado = $this->recogidas_model->all($this->offset);            
+                $this->template = "recogidas_empresas";
         }else {
             //Si no entro en ningun otra opcion: listar todo
             $this->offset = 0;

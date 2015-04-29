@@ -32,7 +32,7 @@ class recogida_empresa extends fs_model
             
             $this->empresa_id = intval($a['empresa_id']);
             $this->empresa_nombre = $this->no_html($a['empresa_nombre']);
-            $this->articulo_id = intval($a['articulo_id']);
+            $this->articulo_id = $a['articulo_id'];
             $this->entrada_empresa = floatval($a['entrada_empresa']);
             $this->salida_empresa = floatval($a['salida_empresa']);
             $this->tipo_id = intval($a['tipo_id']);

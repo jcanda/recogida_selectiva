@@ -2,7 +2,7 @@
 <!--
     Document   : recogida_empresa.xml
     Description:
-        Estructura de la tabla recogida_empresa
+        Estructura de la tabla recogida_empresa.
 -->
 <tabla>
     <columna>
@@ -18,27 +18,27 @@
     </columna>
     <columna>
         <nombre>empresa_id</nombre>
-        <tipo>character varying(6)</tipo>
+        <tipo>varchar(6)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>empresa_nombre</nombre>
-        <tipo>character varying(100)</tipo>
+        <tipo>varchar(100)</tipo>
         <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>articulo_id</nombre>
-        <tipo>character varying(18)</tipo>
+        <tipo>varchar(18)</tipo>
         <nulo>NO</nulo>
     </columna>
     <columna>
         <nombre>entrada_empresa</nombre>
-        <tipo>double precision</tipo>
+        <tipo>double</tipo>
         <nulo>YES</nulo>
     </columna>
     <columna>
         <nombre>salida_empresa</nombre>
-        <tipo>double precision</tipo>
+        <tipo>double</tipo>
         <nulo>YES</nulo>
     </columna>
     <columna>
@@ -59,5 +59,9 @@
     <restriccion>
         <nombre>recogida_empresa_pkey</nombre>
         <consulta>PRIMARY KEY (recogida_id)</consulta>
+    </restriccion>
+    <restriccion>
+        <nombre>articulos_referencia</nombre>
+        <consulta>FOREIGN KEY (...)</consulta>
     </restriccion>
 </tabla>
