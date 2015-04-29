@@ -5,63 +5,79 @@
         Estructura de la tabla recogida_empresa.
 -->
 <tabla>
+
     <columna>
         <nombre>recogida_id</nombre>
         <tipo>serial</tipo>
         <nulo>NO</nulo>
         <defecto>nextval('recogida_empresa_recogida_id_seq'::regclass)</defecto>
     </columna>
+
     <columna>
         <nombre>fecha</nombre>
         <tipo>date</tipo>
-        <nulo>NO</nulo>
+        <nulo>NO</nulo> 
     </columna>
+
     <columna>
         <nombre>empresa_id</nombre>
-        <tipo>varchar(6)</tipo>
-        <nulo>NO</nulo>
+        <tipo>character varying(6)</tipo>
+        <nulo>NO</nulo> 
     </columna>
+
     <columna>
         <nombre>empresa_nombre</nombre>
-        <tipo>varchar(100)</tipo>
-        <nulo>YES</nulo>
+        <tipo>character varying(100)</tipo>
+        <nulo>YES</nulo> 
     </columna>
+
     <columna>
         <nombre>articulo_id</nombre>
-        <tipo>varchar(18)</tipo>
-        <nulo>NO</nulo>
+        <tipo>character varying(18)</tipo>
+        <nulo>NO</nulo> 
     </columna>
+
     <columna>
         <nombre>entrada_empresa</nombre>
-        <tipo>double</tipo>
-        <nulo>YES</nulo>
+        <tipo>double precision</tipo>
+        <nulo>YES</nulo> 
     </columna>
+
     <columna>
         <nombre>salida_empresa</nombre>
-        <tipo>double</tipo>
-        <nulo>YES</nulo>
+        <tipo>double precision</tipo>
+        <nulo>YES</nulo> 
     </columna>
+
     <columna>
         <nombre>tipo_id</nombre>
         <tipo>tinyint(4)</tipo>
-        <nulo>YES</nulo>
+        <nulo>YES</nulo> 
     </columna>
+
     <columna>
         <nombre>matricula</nombre>
-        <tipo>varchar(20)</tipo>
-        <nulo>YES</nulo>
+        <tipo>character varying(20)</tipo>
+        <nulo>YES</nulo> 
     </columna>
+
     <columna>
         <nombre>notas</nombre>
         <tipo>text</tipo>
-        <nulo>YES</nulo>
+        <nulo>YES</nulo> 
     </columna>
+
+
     <restriccion>
         <nombre>recogida_empresa_pkey</nombre>
         <consulta>PRIMARY KEY (recogida_id)</consulta>
     </restriccion>
     <restriccion>
-        <nombre>articulos_referencia</nombre>
-        <consulta>FOREIGN KEY (...)</consulta>
+        <nombre>recogida_empresa_articulo_id_articulos_referencia</nombre>
+        <consulta>FOREIGN KEY (articulo_id)
+            REFERENCES articulos (referencia)
+            ON DELETE RESTRICT ON UPDATE CASCADE
+        </consulta>
     </restriccion>
+    
 </tabla>
