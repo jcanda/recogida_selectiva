@@ -60,31 +60,34 @@
                     <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->resultado->fecha}"/>
                 </div>
             </div>            
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-12">
                 <div class="form-group">
                     Articulo:
-                    <select name="articulo_id" class="form-control">
-                        <option value="0">-</option>
-                        {loop="$fsc->articulos"}
-                            {if="$value->referencia == $fsc->resultado->articulo_id"}
-                                <option value="{$value->referencia}" selected>{$value->descripcion}</option>
-                            {else}
-                                <option value="{$value->referencia}">{$value->descripcion}</option>
-                            {/if}
-                        {/loop}
-                    </select>                   
+                    <div class="input-group">
+                        <input class="form-control" type="text" name="articulo_id" id="articulo_id" value="{$fsc->resultado->articulo_id}" placeholder="Buscar" autocomplete="off"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="document.f_edita_entidad.articulo_id.value=''; document.f_edita_entidad.articulo_id.focus();">
+                                <span class="glyphicon glyphicon-edit"></span>
+                            </button>
+                        </span>
+                    </div>                  
                 </div>
             </div>  
             <div class="col-md-3">
                 <div class="form-group">
-                    Matricula:
-                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
+                    Código LER:
+                    <input class="form-control" type="text" name="ler_ambiente" value="{$fsc->resultado->ler_ambiente}"/>
                 </div>
             </div>   
         </div>
         
-        
         <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    Descripción Medio Ambiente:
+                    <input class="form-control" type="text" name="descrip_ambiente" value="{$fsc->resultado->descrip_ambiente}"/>
+                </div>
+            </div>            
             <div class="col-md-3">
                 <div class="form-group">
                     Entrada:
@@ -97,6 +100,15 @@
                     <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida_empresa}" {if="$fsc->resultado->tipo_id==1"}disabled="disabled" {/if}/>
                 </div>
             </div> 
+            <div class="col-md-3">
+                <div class="form-group">
+                    Matricula:
+                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
+                </div>
+            </div> 
+        </div>
+        
+        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     Notas:

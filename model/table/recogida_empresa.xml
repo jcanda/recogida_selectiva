@@ -36,7 +36,16 @@
         <tipo>character varying(18)</tipo>
         <nulo>NO</nulo> 
     </columna>
-
+    <columna>
+        <nombre>ler_ambiente</nombre>
+        <tipo>varchar(18)</tipo>
+        <nulo>YES</nulo> 
+    </columna>
+    <columna>
+        <nombre>descrip_ambiente</nombre>
+        <tipo>varchar(100)</tipo>
+        <nulo>YES</nulo> 
+    </columna>
     <columna>
         <nombre>entrada_empresa</nombre>
         <tipo>double precision</tipo>

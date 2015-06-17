@@ -13,6 +13,8 @@ class recogida_empresa extends fs_model
    public $empresa_id;
    public $empresa_nombre;
    public $articulo_id;
+   public $ler_ambiente;
+   public $descrip_ambiente;
    public $entrada_empresa;
    public $salida_empresa;
    public $tipo_id;
@@ -33,6 +35,8 @@ class recogida_empresa extends fs_model
             $this->empresa_id = intval($a['empresa_id']);
             $this->empresa_nombre = $this->no_html($a['empresa_nombre']);
             $this->articulo_id = $a['articulo_id'];
+            $this->ler_ambiente = $a['ler_ambiente'];
+            $this->descrip_ambiente = $a['descrip_ambiente'];
             $this->entrada_empresa = floatval($a['entrada_empresa']);
             $this->salida_empresa = floatval($a['salida_empresa']);
             $this->tipo_id = intval($a['tipo_id']);
@@ -44,6 +48,8 @@ class recogida_empresa extends fs_model
             $this->empresa_id = NULL;
             $this->empresa_nombre = '';
             $this->articulo_id = NULL;
+            $this->ler_ambiente = NULL;
+            $this->descrip_ambiente = NULL;
             $this->entrada_empresa = 0;
             $this->salida_empresa = 0;
             $this->tipo_id = 0;
@@ -68,6 +74,7 @@ class recogida_empresa extends fs_model
                 
                 $sql = "UPDATE recogida_empresa SET fecha = " . $this->var2str($this->fecha) . ",
                empresa_id = " . $this->var2str($this->empresa_id) . ", empresa_nombre = " . $this->var2str($this->empresa_nombre) . ", articulo_id = " . $this->var2str($this->articulo_id) . ",
+               ler_ambiente = " . $this->var2str($this->ler_ambiente) .",  descrip_ambiente = " . $this->var2str($this->descrip_ambiente) . ", 
                entrada_empresa = " . $this->var2str($this->entrada_empresa) . ", salida_empresa = " . $this->var2str($this->salida_empresa) . ",
                tipo_id = " . $this->var2str($this->tipo_id) . ", matricula = " . $this->var2str($this->matricula) . ",    
                notas = " . $this->var2str($this->notas) . " WHERE recogida_id = " . $this->var2str($this->recogida_id) . ";";
@@ -75,9 +82,10 @@ class recogida_empresa extends fs_model
                 return $this->db->exec($sql);
                 
             } else {
-                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `empresa_nombre`, `articulo_id`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`) 
+                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `empresa_nombre`, `articulo_id`,`ler_ambiente`,`descrip_ambiente`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`) 
                VALUES (" . $this->var2str($this->fecha) . "," . $this->var2str($this->empresa_id) . "," . $this->var2str($this->empresa_nombre) . ",
-               " . $this->var2str($this->articulo_id) . "," . $this->var2str($this->entrada_empresa) . ",
+               " . $this->var2str($this->articulo_id) . "," . $this->var2str($this->ler_ambiente) . ",
+               " . $this->var2str($this->descrip_ambiente) . "," . $this->var2str($this->entrada_empresa) . ",
                " . $this->var2str($this->salida_empresa) . "," . $this->var2str($this->tipo_id) . ",
                " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ");";
 

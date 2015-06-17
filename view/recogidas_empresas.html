@@ -102,9 +102,10 @@
             <th class="text-left">Fecha</th>
             <th class="text-left">Empresa</th>
             <th class="text-left">Articulo</th>
+            <th class="text-left">Codigo LER</th>
+            <th class="text-left">Medio Ambiente</th>
             <th class="text-left">Entrada</th>
             <th class="text-left">Salida</th>
-            <th class="text-left">Matricula</th> 
             <th class="text-left">Notas</th> 
          </tr>
       </thead>
@@ -116,24 +117,25 @@
          <td>{$value->fecha}</td>
          <td>{$value->empresa_nombre}</td>
          <td>{$value->nombre_articulo()}</td>
+         <td>{$value->ler_ambiente}</td>
+         <td>{$value->descrip_ambiente}</td>
          <td>{$fsc->show_numero($value->entrada_empresa)}</td>
-         <td>{$fsc->show_numero($value->salida_empresa)}</td>
-         <td>{$value->matricula}</td>         
+         <td>{$fsc->show_numero($value->salida_empresa)}</td>       
          <td>{$value->notas}</td>
          <!--{$total_entrada+=$value->entrada_empresa}-->
          <!--{$total_salida+=$value->salida_empresa}-->
       </tr>
       {else}
       <tr class="bg-warning">
-         <td colspan="8">Sin resultados.</td>
+         <td colspan="9">Sin resultados.</td>
       </tr>
       {/loop}
       {if="$fsc->offset==0"}
       <tr>
-         <td colspan="4"></td>
+         <td colspan="6"></td>
          <td class="text-left"><b>{$fsc->show_numero($total_entrada)}</b></td>
          <td class="text-left"><b>{$fsc->show_numero($total_salida)}</b></td>
-         <td colspan="5"></td>
+         <td colspan="3"></td>
       </tr>
       {/if}      
       
