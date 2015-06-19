@@ -2,11 +2,27 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+        $("#articulo_ac").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_articulo',
+            onSelect: function (suggestion) {
+             if (suggestion)
+             {
+                if (document.f_edita_entidad.articulo_id.value != suggestion.data)
+                {
+                   document.f_edita_entidad.articulo_id.value = suggestion.data;
+                   document.f_edita_entidad.ler_ambiente.value = suggestion.ler;
+                   document.f_edita_entidad.ler_ambiente.focus();
+                }
+             }
+            }
+        });         
         document.f_edita_entidad.fecha.focus();
     });
 </script>
 
 <form name="f_edita_entidad" action="{$fsc->url()}&opcion=nueva_salida&codcliente={$fsc->resultado->codcliente}" method="post" class="form">
+    <input type="hidden" name="articulo_id" value="{$fsc->resultado->articulo_id}"/>
     <div class="container-fluid hidden-print">
         <div class="row">
             <div class="col-md-12">
@@ -24,7 +40,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                     Cliente: 
-                    <input class="form-control" type="text" name="nombre_cliente" value="{$fsc->resultado->nombre}" disabled="disabled" />
+                    <input class="form-control" type="text" name="nombre_cliente" value="{$fsc->resultado->nombre_cliente()}" disabled="disabled" />
                 </div>
             </div> 
             <div class="col-md-3">
@@ -34,29 +50,29 @@
                     <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->today()}"/>
                 </div>
             </div>            
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <div class="form-group">
                     Articulo:
                     <div class="input-group">
-                        <input class="form-control" type="text" name="articulo_id" id="articulo_id" value="{$fsc->resultado->articulo_id}" placeholder="Buscar" autocomplete="off"/>
+                        <input class="form-control" type="text" name="articulo_ac" id="articulo_ac" value="" placeholder="Buscar" autocomplete="off"/>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="button" onclick="document.f_edita_entidad.articulo_id.value=''; document.f_edita_entidad.articulo_id.focus();">
+                            <button class="btn btn-default" type="button" onclick="document.f_edita_entidad.articulo_ac.value=''; document.f_edita_entidad.articulo_ac.focus();">
                                 <span class="glyphicon glyphicon-edit"></span>
                             </button>
                         </span>
                     </div>                  
                 </div>
             </div>  
+        </div>
+        
+        
+        <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
                     Código LER:
                     <input class="form-control" type="text" name="ler_ambiente" value="{$fsc->resultado->ler_ambiente}"/>
                 </div>
             </div> 
-        </div>
-        
-        
-        <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
                     Descripción Medio Ambiente:
@@ -75,15 +91,15 @@
                     <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida}"/>
                 </div>
             </div> 
+        </div> 
+        
+        <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
                     Matricula:
                     <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
                 </div>
             </div> 
-        </div> 
-        
-        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     Notas:

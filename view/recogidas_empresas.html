@@ -115,7 +115,7 @@
       <tr class="clickableRow{if condition="$value->tipo_id==1"} bg-success {elseif condition="$value->tipo_id==2"} bg-danger {/if}" href="{$value->url()}">
          <td><b>{$value->recogida_id}</b></td>
          <td>{$value->fecha}</td>
-         <td>{$value->empresa_nombre}</td>
+         <td>{if="$value->tipo_id==1"}{$value->nombre_proveedor()}{else}{$value->nombre_cliente()}{/if}</td>
          <td>{$value->nombre_articulo()}</td>
          <td>{$value->ler_ambiente}</td>
          <td>{$value->descrip_ambiente}</td>
