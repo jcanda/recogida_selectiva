@@ -7,12 +7,28 @@
             if (confirm("¿Realmente desea eliminar esta Recogida ({$fsc->resultado->recogida_id})?"))
                 window.location.href = '{$fsc->url()}&delete={$fsc->resultado->recogida_id}';
         });
-
-        document.f_edita_entidad.articulo_id.focus();
+        $("#articulo_ac").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_articulo',
+            onSelect: function (suggestion) {
+             if (suggestion)
+             {
+                if (document.f_edita_entidad.articulo_id.value != suggestion.data)
+                {
+                   document.f_edita_entidad.articulo_id.value = suggestion.data;
+                   document.f_edita_entidad.ler_ambiente.value = suggestion.ler;
+                   document.f_edita_entidad.ler_ambiente.focus();
+                }
+             }
+            }
+        });
+    
+        document.f_edita_entidad.fecha.focus();
     });
 </script>
 
 <form name="f_edita_entidad" action="{$fsc->resultado->url()}" method="post" class="form">
+    <input type="hidden" name="articulo_id" id="articulo_id" value="{$fsc->resultado->articulo_id}"/>
     <div class="container-fluid hidden-print" style="margin-top: 10px;">
         <div class="row">
             <div class="col-md-8">
@@ -53,7 +69,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                     Empresa: 
-                    <input class="form-control" type="text" name="nombre_proveedor" value="{$fsc->resultado->empresa_nombre}" disabled="disabled" />
+                    <input class="form-control" type="text" name="nombre_empresa" value="{if="$fsc->resultado->tipo_id==1"}{$fsc->resultado->nombre_proveedor()}{else}{$fsc->resultado->nombre_cliente()}{/if}" disabled="disabled" />
                 </div>
             </div> 
             <div class="col-md-3">
@@ -66,28 +82,31 @@
             <div class="col-md-3">
                 <div class="form-group">
                     Articulo:
-                    <select name="articulo_id" class="form-control">
-                        <option value="0">-</option>
-                        {loop="$fsc->articulos"}
-                            {if="$value->referencia == $fsc->resultado->articulo_id"}
-                                <option value="{$value->referencia}" selected>{$value->descripcion}</option>
-                            {else}
-                                <option value="{$value->referencia}">{$value->descripcion}</option>
-                            {/if}
-                        {/loop}
-                    </select>                   
+                    <div class="input-group">
+                        <input class="form-control" type="text" name="articulo_ac" id="articulo_ac" value="{$fsc->resultado->nombre_articulo()}" placeholder="Buscar" autocomplete="off"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="document.f_edita_entidad.articulo_ac.value=''; document.f_edita_entidad.articulo_ac.focus(); document.f_edita_entidad.articulo_id.value='';">
+                                <span class="glyphicon glyphicon-edit"></span>
+                            </button>
+                        </span>
+                    </div>                  
                 </div>
             </div>  
             <div class="col-md-3">
                 <div class="form-group">
-                    Matricula:
-                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
+                    Código LER:
+                    <input class="form-control" type="text" name="ler_ambiente" value="{$fsc->resultado->ler_ambiente}"/>
                 </div>
-            </div>   
+            </div>  
         </div>
         
-        
         <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    Descripción Medio Ambiente:
+                    <input class="form-control" type="text" name="descrip_ambiente" value="{$fsc->resultado->descrip_ambiente}"/>
+                </div>
+            </div>            
             <div class="col-md-3">
                 <div class="form-group">
                     Entrada:
@@ -100,12 +119,21 @@
                     <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida_empresa}" {if="$fsc->resultado->tipo_id==1"}disabled="disabled" {/if}/>
                 </div>
             </div> 
+            <div class="col-md-3">
+                <div class="form-group">
+                    Matricula:
+                    <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>
+                </div>
+            </div> 
+        </div>
+        
+        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     Notas:
                     <textarea class="form-control" name="notas" rows="2">{$fsc->resultado->notas}</textarea>
                 </div>
-            </div>           
+            </div> 
         </div>       
     </div>
 

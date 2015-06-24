@@ -26,15 +26,21 @@
     </columna>
 
     <columna>
-        <nombre>empresa_nombre</nombre>
-        <tipo>character varying(100)</tipo>
+        <nombre>articulo_id</nombre>
+        <tipo>character varying(18)</tipo>
         <nulo>YES</nulo> 
     </columna>
 
     <columna>
-        <nombre>articulo_id</nombre>
-        <tipo>character varying(18)</tipo>
-        <nulo>NO</nulo> 
+        <nombre>ler_ambiente</nombre>
+        <tipo>varchar(18)</tipo>
+        <nulo>YES</nulo> 
+    </columna>
+
+    <columna>
+        <nombre>descrip_ambiente</nombre>
+        <tipo>varchar(100)</tipo>
+        <nulo>YES</nulo> 
     </columna>
 
     <columna>
@@ -67,17 +73,8 @@
         <nulo>YES</nulo> 
     </columna>
 
-
     <restriccion>
         <nombre>recogida_empresa_pkey</nombre>
         <consulta>PRIMARY KEY (recogida_id)</consulta>
-    </restriccion>
-    <restriccion>
-        <nombre>recogida_empresa_articulo_id_articulos_referencia</nombre>
-        <consulta>FOREIGN KEY (articulo_id)
-            REFERENCES articulos (referencia)
-            ON DELETE RESTRICT ON UPDATE CASCADE
-        </consulta>
-    </restriccion>
-    
+    </restriccion>    
 </tabla>

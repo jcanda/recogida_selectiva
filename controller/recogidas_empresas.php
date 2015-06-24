@@ -7,7 +7,7 @@
  */
 
 /**
- * Description of Caja General
+ * Description of Recogidas Empresas
  *
  * @author Zapasoft
  */
@@ -45,7 +45,6 @@ class recogidas_empresas extends fs_controller
         $this->cliente = new cliente();
         $this->pais = new pais();
         $this->articulos = new articulo();
-        $this->articulos = $this->articulos->all();
         $this->busqueda = array(
             'contenido' => '',
             'tipo' => '',
@@ -84,6 +83,19 @@ class recogidas_empresas extends fs_controller
 
             header('Content-Type: application/json');
             echo json_encode(array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json));
+ 
+        } elseif (isset($_REQUEST['buscar_articulo'])) {
+            // Tercero para buscar articulo:
+            /// desactivamos la plantilla HTML
+            $this->template = FALSE;
+
+            $json = array();
+            foreach ($this->articulos->search($_REQUEST['buscar_articulo']) as $arti) {
+                $json[] = array('value' => $arti->descripcion." (".$arti->equivalencia.")",'ler' => $arti->equivalencia, 'data' => $arti->referencia);
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode(array('query' => $_REQUEST['buscar_articulo'], 'suggestions' => $json));
             
         }elseif (isset($_GET['id'])){
             //Editamos recogida de entrada o salida
@@ -102,8 +114,8 @@ class recogidas_empresas extends fs_controller
                 
                 //Si ya existe proveedor entro aqui
                 if (isset($_GET['codproveedor']) AND !empty($_GET['codproveedor'])) {
-                    if (isset($_POST['articulo_id']) AND !empty($_POST['articulo_id'])) { /// editar
-                        //Si se recibe articulo desde plantilla RECOGIDA_EMPRESA_ENTRADA
+                    if (isset($_POST['entrada']) AND $_POST['entrada']>0) { /// editar
+                        //Si se recibe cantidad de entrada desde plantilla RECOGIDA_EMPRESA_ENTRADA
                         //Se Graba y se vuelve a listar todo
                         $this->nueva_recogida();
                                             
@@ -145,8 +157,8 @@ class recogidas_empresas extends fs_controller
                 
                 //Si ya existe cliente entro aqui
                 if (isset($_GET['codcliente']) AND !empty($_GET['codcliente'])) {
-                    if (isset($_POST['articulo_id']) AND !empty($_POST['articulo_id'])) { 
-                        //Si se recibe articulo desde plantilla de RECOGIDA_EMPRESA_SALIDA
+                    if (isset($_POST['salida']) AND $_POST['salida']>0) { 
+                        //Si se recibe cantidad de Salida desde plantilla de RECOGIDA_EMPRESA_SALIDA
                         //Se Graba y se vuelve a listar todo
                         $this->nueva_recogida();
                         
@@ -285,54 +297,39 @@ class recogidas_empresas extends fs_controller
         //----------------------------------------------
         // agrega una recogida nueva
         //----------------------------------------------
-        if(!empty($_POST['articulo_id'])){
-            
-            $this->recogidas_model->articulo_id = $_POST['articulo_id'];
-            
-            //Si la fecha no se detalla se selecciona la de hoy
-            if ($_POST['fecha'] == '') {
-                $this->recogidas_model->fecha = date('d-m-Y');
-            } else
-                $this->recogidas_model->fecha = $_POST['fecha'];
-            
-            //Codigo empresa y nombre segun sea entrada o salida
-            if($_GET['opcion'] == "nueva_entrada"){
-                $this->proveedor = $this->proveedor->get($_GET['codproveedor']);
-                $this->recogidas_model->empresa_nombre = $this->proveedor->nombre;
-                $this->recogidas_model->empresa_id = $_GET['codproveedor'];
-            }else{
-                $this->cliente = $this->cliente->get($_GET['codcliente']);
-                $this->recogidas_model->empresa_nombre = $this->cliente->nombre;
-                $this->recogidas_model->empresa_id = $_GET['codcliente'];
-            }
-            
-            //Codigo y TIpo segun sea entrada o salida
-            if($_GET['opcion'] == "nueva_entrada"){
-                $this->recogidas_model->entrada_empresa = floatval($_POST['entrada']);
-                $this->recogidas_model->tipo_id = 1;                
-            }else{
-                $this->recogidas_model->salida_empresa = floatval($_POST['salida']);
-                $this->recogidas_model->tipo_id = 2; 
-            }
-            
-            $this->recogidas_model->matricula = $_POST['matricula'];
-            $this->recogidas_model->notas = $_POST['notas'];
+        //Si la fecha no se detalla se selecciona la de hoy
+        if ($_POST['fecha'] == '') {
+            $this->recogidas_model->fecha = date('d-m-Y');
+        } else
+            $this->recogidas_model->fecha = $_POST['fecha'];
 
-            if ($this->recogidas_model->save()) {
-                $this->new_message('Datos de la Recogida guardados correctamente.');
-            } else {
-                $this->new_error_msg('Imposible guardar los datos de la nueva Recogida.');
-                return FALSE;
-            }             
-            
-        }else{
-             $this->new_error_msg('Recogida NO creada: Articulo no especificado.');
+        //Codigo empresa y nombre segun sea entrada o salida
+        //Codigo y TIpo segun sea entrada o salida
+        if ($_GET['opcion'] == "nueva_entrada") {
+            $this->recogidas_model->empresa_id = $_GET['codproveedor'];
+            $this->recogidas_model->entrada_empresa = floatval($_POST['entrada']);
+            $this->recogidas_model->tipo_id = 1;
+        } else {
+            $this->recogidas_model->empresa_id = $_GET['codcliente'];
+            $this->recogidas_model->salida_empresa = floatval($_POST['salida']);
+            $this->recogidas_model->tipo_id = 2;
+        }
+
+        $this->recogidas_model->articulo_id = $_POST['articulo_id'];
+        $this->recogidas_model->ler_ambiente = $_POST['ler_ambiente'];
+        $this->recogidas_model->descrip_ambiente = $_POST['descrip_ambiente'];
+        $this->recogidas_model->matricula = $_POST['matricula'];
+        $this->recogidas_model->notas = $_POST['notas'];
+
+        if ($this->recogidas_model->save()) {
+            $this->new_message('Datos de la Recogida guardados correctamente.');
+        } else {
+            $this->new_error_msg('Imposible guardar los datos de la nueva Recogida.');
             return FALSE;
-        }  
-        
+        }
     }
-    
-   protected function edita_recogida() {
+
+    protected function edita_recogida() {
         //----------------------------------------------
         // edita una entidad 
         //----------------------------------------------
@@ -341,28 +338,31 @@ class recogidas_empresas extends fs_controller
         if ($this->resultado) {
             $this->agente = $this->user->get_agente();
         }
-        
-        if ($this->resultado AND !empty($_POST['articulo_id'])) { 
-            
-            $this->resultado->articulo_id = $_POST['articulo_id'];
+
+        if ($this->resultado AND ( $_POST['entrada'] > 0 OR $_POST['salida'] > 0)) {
+
+            if (!empty($_POST['articulo_id']))
+                $this->resultado->articulo_id = $_POST['articulo_id'];
+
             if ($_POST['fecha'] != '')
                 $this->resultado->fecha = $_POST['fecha'];
+
+            $this->resultado->ler_ambiente = $_POST['ler_ambiente'];
+            $this->resultado->descrip_ambiente = $_POST['descrip_ambiente'];
+            $this->resultado->entrada_empresa = floatval($_POST['entrada']);
+            $this->resultado->salida_empresa = floatval($_POST['salida']);
             $this->resultado->matricula = $_POST['matricula'];
             $this->resultado->notas = $_POST['notas'];
-            $this->resultado->entrada_empresa = floatval($_POST['entrada']);              
-            $this->resultado->salida_empresa = floatval($_POST['salida']);
-            
-            if ($this->resultado->save()) 
+
+            if ($this->resultado->save())
                 $this->new_message('Datos Recogida actualizados correctamente.');
-            else 
-                $this->new_error_msg('Imposible actualizar los datos de la Recogida.');          
-        } elseif (!$this->resultado) {
+            else
+                $this->new_error_msg('Imposible actualizar los datos de la Recogida.');
+        } elseif (!$this->resultado) 
             $this->new_error_msg('Datos recogida no encontrados.');
-        }        
-   
         
     }
-    
+
     public function anterior_url()
    {
       $url = '';
