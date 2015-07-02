@@ -21,7 +21,6 @@ class recogidas_inforambiente extends fs_controller {
     public $hasta;
     public $resultados;
     public $allow_delete;
-    public $proveedor_direcciones;
     public $proveedor;
 
     public function __construct() {
@@ -58,18 +57,11 @@ class recogidas_inforambiente extends fs_controller {
         $proveedor = new proveedor();
         $json = array();
         foreach ($proveedor->search($_REQUEST['buscar_proveedor']) as $empre) {
-            $json[] = array('value' => $empre->nombre, 'data' => $empre->codproveedor);
+            $json[] = array('value' => $empre->nombre, 'data' => $empre->codproveedor, 'direcciones' => json_encode( $empre->get_direcciones()));
         }
 
         header('Content-Type: application/json');
         echo json_encode(array('query' => $_REQUEST['buscar_proveedor'], 'suggestions' => $json));
- 
-        $this->proveedor_direcciones = $proveedor->get_direcciones();
     }
 
-    public function direccion_proveedor(){
-        $proveedor = new proveedor();
-        $this->proveedor_direcciones = $proveedor->get_direcciones();        
-        return $this->proveedor_direcciones;
-    }
 }

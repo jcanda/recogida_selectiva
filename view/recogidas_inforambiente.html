@@ -39,6 +39,14 @@
                     if (document.f_inforambiente.codproveedor.value != suggestion.data)
                     {
                         document.f_inforambiente.codproveedor.value = suggestion.data;
+                        $('#id_direccion option[value!="0"]').remove();
+                        selectValues = $.parseJSON(suggestion.direcciones);
+                        $.each(selectValues, function (key, value) {
+                            $("#id_direccion")
+                                .append($("<option></option>")
+                                .attr("value", value.id)
+                                .text(value.direccion));
+                        });
                         document.f_inforambiente.id_direccion.focus();
                     }
                 }
@@ -53,7 +61,7 @@
             window.location.href = '{$fsc->url()}&delete_certificado_in=' + id + '&tab=cert_in';
     }
 </script>
-{$fsc->direccion_proveedor()[0]}
+
 <form name="f_inforambiente" action="{$fsc->url()}&tab=cert_in" method="post" class="form">
     <input type="hidden" name="codproveedor" value="{$fsc->codproveedor}"/>
     <div class="container-fluid" style="margin-top: 15px;">
@@ -66,7 +74,7 @@
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="button" onclick="document.f_inforambiente.ac_proveedor.value = '';
                                     document.f_inforambiente.ac_proveedor.focus();
-                                    document.f_inforambiente.codproveedor.value = '';">
+                                    document.f_inforambiente.codproveedor.value = '';document.f_inforambiente.id_direccion.option[value!='0'].remove();">
                                 <span class="glyphicon glyphicon-edit"></span>
                             </button>
                         </span> 
