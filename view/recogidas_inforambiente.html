@@ -39,15 +39,18 @@
                     if (document.f_inforambiente.codproveedor.value != suggestion.data)
                     {
                         document.f_inforambiente.codproveedor.value = suggestion.data;
-                        $('#id_direccion option[value!="0"]').remove();
+                        
+                        $('#direccion_id option[value!="0"]').remove();
+                        
                         selectValues = $.parseJSON(suggestion.direcciones);
                         $.each(selectValues, function (key, value) {
-                            $("#id_direccion")
+                            $("#direccion_id")
                                 .append($("<option></option>")
                                 .attr("value", value.id)
                                 .text(value.direccion));
                         });
-                        document.f_inforambiente.id_direccion.focus();
+                        
+                        document.f_inforambiente.direccion_id.focus();
                     }
                 }
             }
@@ -58,12 +61,13 @@
     function delete_certificado(id)
     {
         if (confirm("¿Realmente desea eliminar Certificado (" + id + ") para esta empresa?"))
-            window.location.href = '{$fsc->url()}&delete_certificado_in=' + id + '&tab=cert_in';
+            window.location.href = '{$fsc->url()}&delete_certificado=' + id + '&tab=cert_in';
     }
 </script>
 
 <form name="f_inforambiente" action="{$fsc->url()}&tab=cert_in" method="post" class="form">
     <input type="hidden" name="codproveedor" value="{$fsc->codproveedor}"/>
+    <input type="hidden" name="tipo_id" value="1"/>
     <div class="container-fluid" style="margin-top: 15px;">
         <div class="row">
             <div class="col-sm-4">
@@ -84,10 +88,7 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     Dirección:
-                    <select name="id_direccion" id="id_direccion" class="form-control" >
-                        {loop="$fsc->proveedor_direcciones"}
-                        <option value="{$value['id']}"{if="$fsc->prove_iddireccion==$value['id']"} selected="selected"{/if}>{$value['descripcion']}</option>
-                        {/loop}
+                    <select name="direccion_id" id="direccion_id" class="form-control" >
                     </select>
                 </div>
             </div>            
@@ -108,19 +109,19 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     Nº Certificado:
-                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->n_certificado}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
+                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_in()}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="form-group">
                     Fecha Certificado:
-                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->fecha}" id="fecha" placeholder="Fecha certificado" autocomplete="off"/>
+                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->fecha}" id="fecha" placeholder="Si no indica por defecto hoy" autocomplete="off"/>
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="form-group">
                     Observaciones:
-                    <textarea class="form-control" name="observaciones" rows="1">{$fsc->observaciones}</textarea>
+                    <textarea class="form-control" name="observaciones" rows="1"></textarea>
                 </div>
             </div>           
         </div>
@@ -149,14 +150,14 @@
             </thead>
             {loop="$fsc->resultados"}
             <tr>
-                <td>{$value['numero']}</td>
-                <td>{$value['fecha']}</td>
-                <td>{$value['empresa_nombre']}</td>
-                <td><a href="{$value['url']}">{$value['certificado']}</a></td>                
-                <td>{$value['observaciones']}</td>
+                <td>{$value->n_certificado}</td>
+                <td>{$value->fecha}</td>
+                <td>{$value->nombre}</td>
+                <td><a href="{$value->link}" target="_blank">Visualizar Certificado</a></td>                
+                <td>{$value->observaciones2}</td>
                 {if="$fsc->allow_delete"}
                 <td class="text-right">
-                    <a href="#" class="btn btn-xs btn-danger" title="Eliminar" onclick="delete_certificado('{$value->certificado_id}')">
+                    <a href="#" class="btn btn-xs btn-danger" title="Eliminar" onclick="delete_certificado('{$value->id}')">
                         <span class="glyphicon glyphicon-trash"></span>
                     </a>
                 </td>
@@ -168,9 +169,146 @@
     {/if}
 </form>
 {elseif="$fsc->pestanya=='cert_out'"}
-<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
-    CErtificados Salida
-</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#ac_cliente").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_cliente',
+            onSelect: function (suggestion) {
+                if (suggestion)
+                {
+                    if (document.f_inforambiente.codcliente.value != suggestion.data)
+                    {
+                        document.f_inforambiente.codcliente.value = suggestion.data;
+                        
+                        $('#direccion_id option[value!="0"]').remove();
+                        
+                        selectValues = $.parseJSON(suggestion.direcciones);
+                        $.each(selectValues, function (key, value) {
+                            $("#direccion_id")
+                                .append($("<option></option>")
+                                .attr("value", value.id)
+                                .text(value.direccion));
+                        });
+                        
+                        document.f_inforambiente.direccion_id.focus();
+                    }
+                }
+            }
+        });
+        document.f_inforambiente.ac_cliente.focus();
+    });
+
+    function delete_certificado(id)
+    {
+        if (confirm("¿Realmente desea eliminar Certificado (" + id + ") para esta empresa?"))
+            window.location.href = '{$fsc->url()}&delete_certificado=' + id + '&tab=cert_out';
+    }
+</script>
+
+<form name="f_inforambiente" action="{$fsc->url()}&tab=cert_out" method="post" class="form">
+    <input type="hidden" name="codcliente" value="{$fsc->codcliente}"/>
+    <input type="hidden" name="tipo_id" value="2"/>
+    <div class="container-fluid" style="margin-top: 15px;">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    Empresa:
+                    <div class="input-group">
+                        <input class="form-control" type="text" name="ac_cliente" value="{$fsc->codcliente}" id="ac_cliente" placeholder="Selecciona empresa" autocomplete="off"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="document.f_inforambiente.ac_cliente.value = '';
+                                    document.f_inforambiente.ac_cliente.focus();
+                                    document.f_inforambiente.codcliente.value = '';document.f_inforambiente.id_direccion.option[value!='0'].remove();">
+                                <span class="glyphicon glyphicon-edit"></span>
+                            </button>
+                        </span> 
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    Dirección:
+                    <select name="direccion_id" id="direccion_id" class="form-control" >
+                    </select>
+                </div>
+            </div>            
+            <div class="col-sm-2">
+                <div class="form-group">
+                    Desde:
+                    <input class="form-control datepicker" type="text" name="desde" value="{$fsc->desde}"/>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    Hasta:
+                    <input class="form-control datepicker" type="text" name="hasta" value="{$fsc->hasta}"/>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    Nº Certificado:
+                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_out()}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    Fecha Certificado:
+                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->fecha}" id="fecha" placeholder="Si no indica por defecto hoy" autocomplete="off"/>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    Observaciones:
+                    <textarea class="form-control" name="observaciones" rows="1"></textarea>
+                </div>
+            </div>           
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
+                        this.form.submit();">
+                    <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Generar Certificado Entrada
+                </button>
+            </div>
+        </div>
+    </div>
+    {if="$fsc->resultados"}
+    <br/>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nº Certificado</th>
+                    <th>Fecha</th>
+                    <th>Empresa</th>
+                    <th>Certificado</th>
+                    <th>Observaciones</th>
+                    {if="$fsc->allow_delete"} <th class="text-right">Acciones</th> {/if}
+                </tr>
+            </thead>
+            {loop="$fsc->resultados"}
+            <tr>
+                <td>{$value->n_certificado}</td>
+                <td>{$value->fecha}</td>
+                <td>{$value->nombre}</td>
+                <td><a href="{$value->link}" target="_blank">Visualizar Certificado</a></td>                
+                <td>{$value->observaciones2}</td>
+                {if="$fsc->allow_delete"}
+                <td class="text-right">
+                    <a href="#" class="btn btn-xs btn-danger" title="Eliminar" onclick="delete_certificado('{$value->id}')">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </a>
+                </td>
+                {/if}
+            </tr>
+            {/loop}
+        </table>
+    </div>
+    {/if}
+</form>
 {elseif="$fsc->pestanya=='graf'"}
 <div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
     Graficos
