@@ -197,7 +197,7 @@ class recogida_empresa extends fs_model
          return FALSE;          
    }   
    
-   public function search($buscar='', $tipo='todos',$orden="fecha")
+   public function search($buscar='', $desde='', $hasta='', $tipo='todos',$orden="fecha")
    {
       $entidadlist = array();
       
@@ -209,11 +209,21 @@ class recogida_empresa extends fs_model
       if($buscar != '')
       {
          $sql .= " AND ((upper(matricula) LIKE upper('%".$buscar."%')) OR (notas LIKE '%".$buscar."%')
-            OR (lower(fecha) LIKE lower('%".$buscar."%')) OR (empresa_nombre LIKE '%".$buscar."%'))";
+            OR (lower(descrip_ambiente) LIKE lower('%".$buscar."%')) OR (ler_ambiente LIKE '%".$buscar."%'))";
       }
       
+      if($desde != '')
+      {
+         $sql .= " AND fecha >= ".$this->var2str($desde);
+      }
+      
+      if($hasta != '')
+      {
+         $sql .= " AND fecha <= ".$this->var2str($hasta);
+      }       
+      
       //Segundo compruebo el parametro tipo para filtrar
-      if($tipo != "todos" AND $tipo != "1")
+      if($tipo == "2")
       {
           //Si el parametro es 
           $sql .= " AND tipo_id = ".$tipo;
@@ -226,7 +236,7 @@ class recogida_empresa extends fs_model
           }
           //si no entra en ninguno de los 2 if anteriores muestra todos entrada y salida.
       }
-      $sql.= " ORDER BY ".$orden." ASC ";
+      $sql.= " ORDER BY ".$orden." DESC ";
       
       $data = $this->db->select($sql.";");
       if($data)

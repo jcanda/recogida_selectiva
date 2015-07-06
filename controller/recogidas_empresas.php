@@ -46,8 +46,9 @@ class recogidas_empresas extends fs_controller
         $this->pais = new pais();
         $this->articulos = new articulo();
         $this->busqueda = array(
-            'contenido' => '',
-            'tipo' => '',
+            'desde' => '',
+            'hasta' => '',
+            'filtro_tipo' => '',
             'orden' => 'fecha'
         );
         /// ¿El usuario tiene permiso para eliminar en esta página?
@@ -212,6 +213,13 @@ class recogidas_empresas extends fs_controller
                 
                 $this->resultado = $this->recogidas_model->all($this->offset);            
                 $this->template = "recogidas_empresas";
+        }
+        //Para BUSCAR entrada o salida O FILTRAR
+        else if (isset($_POST['buscar'])){
+            $this->busqueda['filtro_tipo'] = $_POST['filtro_tipo'];
+            
+            $this->resultado = $this->recogidas_model->search($_POST['buscar'], '','', $this->busqueda['filtro_tipo']);
+            $this->template = "recogidas_empresas";        
         }else {
             //Si no entro en ningun otra opcion: listar todo
             $this->offset = 0;

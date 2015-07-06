@@ -117,7 +117,16 @@ class recogidas_inforambiente extends fs_controller {
         //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
         //CONSULTO los datos de la EMPRESA y los de la DIRECCION
         // El resto de variasbles las cojo del POST N_certficado, FECHA
-        return TRUE;  
+        if($this->algun_error()){
+            return FALSE;
+        }elseif ($this->recogidas_model->existe_certificado($_POST['n_certificado'], $_POST['tipo_id'])) {
+            $this->new_error_msg('Número de certificado no especificado o YA EXISTENTE...');
+            return FALSE;                        
+        }else{
+            $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta']);
+            $this->new_message('PDF generado');
+            return TRUE; 
+        }
     } 
     
     private function buscar_proveedor() {
@@ -146,5 +155,20 @@ class recogidas_inforambiente extends fs_controller {
 
         header('Content-Type: application/json');
         echo json_encode(array('query' => $_REQUEST['buscar_cliente'], 'suggestions' => $json));
-    }    
+    }
+    
+    private function algun_error(){
+        $status = TRUE;
+        
+        if(!isset($_POST['direccion_id']))
+            $this->new_error_msg("Empresa o Direccion no especificada");             
+        elseif($_POST['desde'] == '' OR $_POST['hasta'] == '')
+            $this->new_error_msg("Intervalos de Fechas no especificados");
+        elseif($_POST['n_certificado']=='' OR $_POST['n_certificado']==0)
+            $this->new_error_msg("Numero de certificado no especificado");
+        else
+            $status = FALSE;
+      
+      return $status;
+    }
 }

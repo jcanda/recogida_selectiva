@@ -4,6 +4,9 @@
 */
 
 /* Primary key found: id*/
+
+require_model('recogida_empresa.php');
+
 class recogida_certificado extends fs_model
 {
     var $id;
@@ -14,6 +17,7 @@ class recogida_certificado extends fs_model
     var $observaciones2;
     var $link;
     var $tipo_id;
+    //Variable para recoger el nombre del Cliente o Proveedor
     var $nombre;
 
     public function __construct($data=FALSE)
@@ -63,7 +67,7 @@ class recogida_certificado extends fs_model
         $value = $this->var2str($this->id);
         if($this->id)
         {
-            $sql = "DELETE FROM {$this->table_name} WHERE id = $value";
+            $sql = "DELETE FROM {$this->table_name} WHERE id = $value;";
             return $this->db->exec($sql);
         }
         
@@ -79,40 +83,46 @@ class recogida_certificado extends fs_model
         if($this->id)
         {
             $value = $this->var2str($this->id);
-            return $this->db->select("SELECT * FROM {$this->table_name} WHERE id = $value");
+            return $this->db->select("SELECT * FROM {$this->table_name} WHERE id = $value;");
         }
         
         return false;
     }
-
+    /**
+     * Esta función devuelve TRUE si los datos estan correctos
+     * 
+     */
+    public function valida()
+    {
+        $status = FALSE;
+        
+        if($this->n_certificado == 0)
+            $this->new_error_msg("Numero de certificado no indicado");             
+        else
+            $status = TRUE;
+      
+      return $status;         
+    }
     /**
      * Esta función sirve tanto para insertar como para actualizar
      * los datos del objeto en la base de datos.
      */
-    public function save()
-    {
-        $sql = "";
-        if($this->exists())
-        {
-            $value = $this->var2str($this->id);
-            if($this->id)
-            {
-                $sql = "UPDATE {$this->table_name} SET id = " . $this->var2str($this->id) . "
-                        , n_certificado = " . $this->var2str($this->n_certificado) . "
-                        , fecha = " . $this->var2str($this->fecha) . "
-                        , empresa_id = " . $this->var2str($this->empresa_id) . "
-                        , direccion_id = " . $this->var2str($this->direccion_id) . "
-                        , observaciones2 = " . $this->var2str($this->observaciones2) . "
-                        , link = " . $this->var2str($this->link) . "
-                        , tipo_id = " . $this->var2str($this->tipo_id) . "
-                          WHERE id = $value";
-                return $this->db->exec($sql);
-            }
-            
-        }
-        else
-        {
-            $sql = "INSERT INTO {$this->table_name} (
+    public function save() {
+
+        if ($this->valida()) {
+            if ($this->exists()) {
+                $sql = "UPDATE {$this->table_name} SET n_certificado = " . $this->var2str($this->n_certificado) . "
+                    , fecha = " . $this->var2str($this->fecha) . "
+                    , empresa_id = " . $this->var2str($this->empresa_id) . "
+                    , direccion_id = " . $this->var2str($this->direccion_id) . "
+                    , observaciones2 = " . $this->var2str($this->observaciones2) . "
+                    , link = " . $this->var2str($this->link) . "
+                    , tipo_id = " . $this->var2str($this->tipo_id) . "
+                    WHERE id = $this->var2str($this->id);";
+                    
+                    return $this->db->exec($sql);
+            } else {
+                $sql = "INSERT INTO {$this->table_name} (
                                     n_certificado
                                     , fecha
                                     , empresa_id
@@ -129,38 +139,42 @@ class recogida_certificado extends fs_model
                                     ,  " . $this->var2str($this->observaciones2) . "
                                     ,  " . $this->var2str($this->link) . "
                                     ,  " . $this->var2str($this->tipo_id) . "
-                                )";
-            return $this->db->exec($sql);
-        }
-
-        return false;
+                                );";
+                
+                if ($this->db->exec($sql)) {
+                    return TRUE;
+                } else
+                    return FALSE;                
+            }
+        } else
+            return FALSE;
     }
-    
+
     public function get($cod)
     {
         $cod = $this->var2str($cod);
-        return $this->parse($this->db->select("SELECT * FROM {$this->table_name} WHERE id = $cod"));
+        return $this->parse($this->db->select("SELECT * FROM {$this->table_name} WHERE id = $cod;"));
     }
     
     public function get_all_offset($offset=0, $limit=FS_ITEM_LIMIT)
     {
-        return $this->parse($this->db->select_limit("SELECT * FROM {$this->table_name} ORDER BY id DESC", $limit, $offset), true);
+        return $this->parse($this->db->select_limit("SELECT * FROM {$this->table_name} ORDER BY id DESC;", $limit, $offset), true);
     }
     public function get_all()
     {
-        return $this->parse($this->db->select("SELECT * FROM {$this->table_name} ORDER BY n_certificado DESC"), true);
+        return $this->parse($this->db->select("SELECT * FROM {$this->table_name} ORDER BY n_certificado DESC;"), true);
     }
     public function get_all_in()
     {
         return $this->parse($this->db->select("SELECT * FROM "
                 . "{$this->table_name} INNER JOIN proveedores ON {$this->table_name}.empresa_id = proveedores.codproveedor "
-                . "WHERE {$this->table_name}.tipo_id = 1 ORDER BY {$this->table_name}.n_certificado DESC"), true);
+                . "WHERE {$this->table_name}.tipo_id = 1 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
     }
     public function get_all_out()
     {
         return $this->parse($this->db->select("SELECT * FROM "
                 . "{$this->table_name} INNER JOIN clientes ON {$this->table_name}.empresa_id = clientes.codcliente "
-                . "WHERE {$this->table_name}.tipo_id = 2 ORDER BY {$this->table_name}.n_certificado DESC"), true);
+                . "WHERE {$this->table_name}.tipo_id = 2 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
         }    
     public function parse($items, $array = false)
     {
@@ -182,7 +196,7 @@ class recogida_certificado extends fs_model
     
     public function nextvalue_in(){
 
-        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 1");
+        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 1;");
         
         if ($data)
             return ($data[0]['id'])+1;
@@ -191,11 +205,34 @@ class recogida_certificado extends fs_model
    }    
     public function nextvalue_out(){
 
-        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 2");
+        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 2;");
         
         if ($data)
             return ($data[0]['id'])+1;
         else
             return FALSE;
    }
+
+    /**
+     * Esta función devuelve TRUE si los datos del objeto se encuentran
+     * en la base de datos.
+     */
+    public function existe_certificado($ncertificado = 0, $tipo = 0)
+    {
+        
+        if($ncertificado != 0 AND $tipo != 0)
+        {
+            $value = $this->var2str($ncertificado);
+            $tipo_id = $this->var2str($tipo);
+            return $this->db->select("SELECT id FROM {$this->table_name} WHERE n_certificado = $value AND tipo_id = $tipo_id;");
+        }
+        
+        return false;
+    }
+    
+    public function lineas_certificado($desde='', $hasta=''){
+        $lineas = new recogida_empresa();
+        return $lineas->search('', $desde, $hasta);
+    }
+   
 }

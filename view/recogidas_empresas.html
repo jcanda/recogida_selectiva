@@ -79,9 +79,9 @@
             </div>
             <div class="form-group">
                 <select name="filtro_tipo" class="form-control" onchange="this.form.submit();">
-                    <option value="todos"{if="$fsc->busqueda['tipo_id']=='0'"} selected{/if}>Todos</option>
-                    <option value="1"{if="$fsc->busqueda['tipo_id']=='1'"} selected{/if}>Entradas</option>
-                    <option value="2"{if="$fsc->busqueda['tipo_id']=='2'"} selected{/if}>Salidas</option>
+                    <option value=""{if="$fsc->busqueda['filtro_tipo']==''"} selected{/if}>Todos</option>
+                    <option value="1"{if="$fsc->busqueda['filtro_tipo']=='1'"} selected{/if}>Entradas</option>
+                    <option value="2"{if="$fsc->busqueda['filtro_tipo']=='2'"} selected{/if}>Salidas</option>
                 </select>                
             </div>
             <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true; this.form.submit();">
@@ -98,7 +98,6 @@
    <table class="table table-hover" id="myTable">
       <thead>
          <tr>
-            <th class="text-left"><a href="#">N Recogida</a></th>
             <th class="text-left">Fecha</th>
             <th class="text-left">Empresa</th>
             <th class="text-left">Articulo</th>
@@ -113,7 +112,6 @@
       <!--{$total_salida=0}-->      
       {loop="$fsc->resultado"}
       <tr class="clickableRow{if condition="$value->tipo_id==1"} bg-success {elseif condition="$value->tipo_id==2"} bg-danger {/if}" href="{$value->url()}">
-         <td><b>{$value->recogida_id}</b></td>
          <td>{$value->fecha}</td>
          <td>{if="$value->tipo_id==1"}{$value->nombre_proveedor()}{else}{$value->nombre_cliente()}{/if}</td>
          <td>{$value->nombre_articulo()}</td>
@@ -127,12 +125,12 @@
       </tr>
       {else}
       <tr class="bg-warning">
-         <td colspan="9">Sin resultados.</td>
+         <td colspan="8">Sin resultados.</td>
       </tr>
       {/loop}
       {if="$fsc->offset==0"}
       <tr>
-         <td colspan="6"></td>
+         <td colspan="5"></td>
          <td class="text-left"><b>{$fsc->show_numero($total_entrada)}</b></td>
          <td class="text-left"><b>{$fsc->show_numero($total_salida)}</b></td>
          <td colspan="3"></td>
