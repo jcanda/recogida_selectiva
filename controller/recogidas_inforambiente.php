@@ -11,6 +11,9 @@
  *
  * @author Zapasoft
  */
+
+require_once 'plugins/facturacion_base/extras/fs_pdf.php';
+
 require_model('proveedor.php');
 require_model('cliente.php');
 require_model('recogida_certificado.php');
@@ -23,6 +26,7 @@ class recogidas_inforambiente extends fs_controller {
     public $resultados;
     public $allow_delete;
     public $recogidas_model;
+    public $filename;
     public $link;
 
     public function __construct() {
@@ -47,7 +51,8 @@ class recogidas_inforambiente extends fs_controller {
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         
         $this->recogidas_model = new recogida_certificado();         
-
+        $this->link = "https://gestion.luisrivas.es/tmp/".FS_TMP_NAME."certificados/";
+        
         if (isset($_REQUEST['buscar_proveedor'])) {
             $this->buscar_proveedor();
         }elseif(isset($_REQUEST['buscar_cliente'])) {
@@ -62,7 +67,10 @@ class recogidas_inforambiente extends fs_controller {
         }elseif (isset($_GET['delete_certificado'])){    
             //Eliminar certificado luego enseño
             $certificado = $this->recogidas_model->get($_GET['delete_certificado']);
-            if ($certificado) {
+            
+            if ($certificado) {                
+                unlink('tmp/'.FS_TMP_NAME.'certificados/'.$certificado->link);
+                
                 if ($certificado->delete()) {
                     $this->new_message('Certificado eliminado correctamente.');
                 } else
@@ -102,7 +110,7 @@ class recogidas_inforambiente extends fs_controller {
         
         //Capturo la variable link luego de generar el pdf
         //Nunca llego aqui si no se ejecuto bien el pdf
-        $this->recogidas_model->link = $this->link;
+        $this->recogidas_model->link = $this->filename;
         
         if ($this->recogidas_model->save()) {
             $this->new_message('Datos del Certificado guardados correctamente.');
@@ -113,22 +121,447 @@ class recogidas_inforambiente extends fs_controller {
     }
     
     private function genera_pdf() {
-        //filtro si ENTRADA o SALIDA (TIPO_ID)
-        //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
-        //CONSULTO los datos de la EMPRESA y los de la DIRECCION
-        // El resto de variasbles las cojo del POST N_certficado, FECHA
-        if($this->algun_error()){
+        // Primero chequeo variables y compruebo numero certificado
+        if ($this->algun_error()) {
             return FALSE;
-        }elseif ($this->recogidas_model->existe_certificado($_POST['n_certificado'], $_POST['tipo_id'])) {
+        } elseif ($this->recogidas_model->existe_certificado($_POST['n_certificado'], $_POST['tipo_id'])) {
             $this->new_error_msg('Número de certificado no especificado o YA EXISTENTE...');
-            return FALSE;                        
-        }else{
-            $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta']);
-            $this->new_message('PDF generado');
-            return TRUE; 
+            return FALSE;
+        } else {
+            $ano = date("Y");
+
+            // ************************************************************************
+            // ENTRADA
+            // Creamos el PDF y escribimos sus metadatos de ENTRADA
+            // CONSULTO los datos de la EMPRESA y los de la DIRECCION
+            // El resto de variasbles las cojo del POST N_certficado, FECHA
+            //*************************************************************************
+            if ($_POST['tipo_id'] == 1) {
+                $this->filename = 'certificado_productor' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
+                
+                $proveedor = new proveedor();
+                $proveedor_select = $proveedor->get($_POST['codproveedor']);
+                
+                $direccion = new direccion_proveedor();
+                $direccion_select = $direccion->get($_POST['direccion_id']);
+                
+                if( file_exists('plugins/recogida_selectiva/view/img/firma_luis.png') )
+                {
+                    //$pdf_doc->pdf->ezImage('plugins/recogida_selectiva/view/img/firma_luis.png', 500, 500, 'none');
+                }   
+                
+                $pdf_doc = new fs_pdf();
+                $pdf_doc->pdf->selectFont('plugins/facturacion_base/extras/ezpdf/fonts/Times-Roman.afm');
+                $pdf_doc->pdf->ezSetMargins(2, 1, 1, 1);
+                $pdf_doc->pdf->addInfo('Title', 'Certificado ' . $this->zerofill($_POST['n_certificado'], 7));
+                $pdf_doc->pdf->addInfo('Subject', 'Certificado para Productor - ' . $this->zerofill($_POST['n_certificado'], 7));
+                $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+
+                /// ¿Añadimos el logo?
+                if( file_exists('tmp/'.FS_TMP_NAME.'firma_luis.png') )
+                {
+                    $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 10,10,157,49);
+                }                
+                //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
+                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor']);
+
+                if ($lineas) {
+                    $lineasrecogidas = count($lineas);
+                    $linea_actual = 0;
+                    $lppag = 15; /// líneas por página
+                    $pagina = 1;
+
+                    // Imprimimos las páginas necesarias
+                    while ($linea_actual < $lineasrecogidas) {
+                        /// salto de página
+                        if ($linea_actual > 0) {
+                            $pdf_doc->pdf->ezNewPage();
+                            $pagina++;
+                        }
+                        /* ******************************************************************************************************************************************
+                         * Creamos la cabecera de la página, en este caso para el modelo simple para plantilla
+                         * 
+                         * ********************************************************************************************************************************************* */
+                        //añado lineas en coordenadas exactas
+                        $pdf_doc->pdf->ezText('Tfno: ' . $this->empresa->telefono, 8, array('aleft' => 480));
+                        $pdf_doc->pdf->ezText('Email: ' . $this->empresa->email, 8, array('aleft' => 480));
+                        $pdf_doc->pdf->ezText("\n", 4);
+
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'titulo' => '<b>COMPROBANTE DE ENTREGA Nº:</b>',
+                                    'codigo' => '<b>TNP303600002086' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '</b>'
+                                )
+                        );
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 11,
+                                    'cols' => array(
+                                        'titulo' => array('justification' => 'left'),
+                                        'codigo' => array('justification' => 'right')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'gridLines' => 4,
+                                    'xOrientation' => 'center'
+                                )
+                        );
+                        //Siguiente bloque de tipo texto
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_row(
+                                array('texto' =>  'Estimado proveedor:
+                                    ')
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'texto' =>  'Con la publicación del Decreto 59/2009, de 26 de febrero, por el que se regula la trazabilidad de los residuos, los gestores de residuos no peligrosos están obligados a documentar cada una de las entregas de residuos mediante un comprobante que deben enviar al productor, en el que figuren como mínimo los siguientes datos:
+                                    ')
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'texto' =>  '-Identificación del centro remitente del residuo (la persona productora o gestora del que procede).
+-Características de los residuos.
+-Identificación de la persona gestora destinataria y del tipo de gestión que va a realizar.
+-Fecha de entrega de los residuos y firma de la persona gestora.
+')
+                        );                        
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'texto' =>  'Por este motivo les enviamos el presente certificado con los residuos que hemos recibido en nuestras instalaciones, provenientes de su empresa:')
+                        ); 
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 10,
+                                    'cols' => array(
+                                        'texto' => array('justification' => 'left')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 0,
+                                    'xOrientation' => 'center'
+                                )
+                        );
+                        
+                        $pdf_doc->pdf->ezText("\n", 10);
+                        
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque de los DAtos del PRODUCTOR
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'titulo' => '<b>DATOS DEL PRODUCTOR</b>'
+                                )
+                        );
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 10,
+                                    'cols' => array(
+                                        'titulo' => array('justification' => 'center')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 0,
+                                    'xOrientation' => 'center'
+                                )
+                        );
+
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque de los INFORMACION del PRODUCTOR
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'nombre' => 'NOMBRE',
+                                    'direccion' => 'DIRECCIÓN',
+                                    'cif' => 'C.I.F',
+                                    'productor' => 'PRODUCTOR'
+                                )
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'nombre' => $proveedor_select->nombre,
+                                    'direccion' => $direccion_select->direccion,
+                                    'cif' => $proveedor_select->cifnif,
+                                    'productor' => ''
+                                )
+                        );                        
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 8,
+                                    'cols' => array(
+                                        'nombre' => array('justification' => 'left'),
+                                        'direccion' => array('justification' => 'left'),
+                                        'cif' => array('justification' => 'left'),
+                                        'productor' => array('justification' => 'center'),
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 1,
+                                    'xOrientation' => 'center'
+                                )
+                        );
+                        
+                        $pdf_doc->pdf->ezText("\n", 10);
+                        
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque de los CARACTERÍSTICAS DE LOS RESIDUOS
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'titulo' => '<b>CARACTERÍSTICAS DE LOS RESIDUOS</b>'
+                                )
+                        );
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 10,
+                                    'cols' => array(
+                                        'titulo' => array('justification' => 'center')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 0,
+                                    'xOrientation' => 'center'
+                                )
+                        );                        
+                        
+                        /* ******************************************************************************************************************************************
+                         * Creamos la tabla con las lineas del certificado :
+                         * 
+                         * Fecha    LER  Codigo_Operacion   Descripcion    Obserbaciones Cantidad
+                         * ********************************************************************************************************************************************* */
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'fecha' => 'Fecha',
+                                    'ler' => 'Cód. LER',
+                                    'codigo_operacion' => 'Cód. Operación',
+                                    'descripcion' => 'Descripción',
+                                    'notas' => 'Nota</b>',
+                                    'cantidad' => 'Cantidad (kg)'
+                                )
+                        );
+
+                        $saltos = 0;
+                        for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) AND ( $linea_actual < $lineasrecogidas));) {
+                            $fila = array(
+                                'fecha' => date("d/m/Y", strtotime($lineas[$linea_actual]->fecha)),
+                                'ler' => $lineas[$linea_actual]->ler_ambiente,
+                                'codigo_operacion' => 'R4: valoración',
+                                'descripcion' => '  ' . $this->fix_html($lineas[$linea_actual]->descrip_ambiente),
+                                'notas' => $this->fix_html($lineas[$linea_actual]->notas),
+                                'cantidad' => $this->show_numero($lineas[$linea_actual]->entrada_empresa, 2)
+                            );
+
+                            $pdf_doc->add_table_row($fila);
+                            $saltos++;
+                            $linea_actual++;
+                        }
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 8,
+                                    'cols' => array(
+                                        'fecha' => array('justification' => 'center', 'width' => 60),
+                                        'ler' => array('justification' => 'center', 'width' => 50),
+                                        'codigo_operacion' => array('justification' => 'center', 'width' => 80),
+                                        'descripcion' => array('justification' => 'left', 'width' => 180),
+                                        'notas' => array('justification' => 'left'),
+                                        'cantidad' => array('justification' => 'right', 'width' => 60)
+                                    ),
+                                    'alignHeadings' => 'center',
+                                    'width' => 540,
+                                    'shaded' => 0,
+                                    'showLines' => 2,
+                                    'xOrientation' => 'center'
+                                )
+                        );
+
+                        /* *******************************************************************************************************************************************
+                         * 
+                         * Rellenamos el hueco que falta hasta donde debe aparecer la última tabla
+                         * 
+                         * ********************************************************************************************************************************************* */
+                        if ($_POST['observaciones'] == '') {
+                            $salto = "\n";
+                        } else {
+                            $salto = "      <b>Observaciones</b>: " . $this->fix_html($_POST['observaciones']) . "\n";
+                            $saltos += count(explode("\n", $_POST['observaciones'])) - 1;
+                        }
+
+                        if ($saltos < $lppag) {
+                            //Numero de saltos a rellenar hasta el final de la pagina
+                            for (; $saltos < $lppag; $saltos++)
+                                $salto2 .= "\n";
+                            $pdf_doc->pdf->ezText($salto2, 10);
+
+                            //Pongo las observaciones al final               
+                            $pdf_doc->pdf->ezText($salto, 8);
+                        } else if ($linea_actual >= $lineasfact) {
+                            $pdf_doc->pdf->ezText($salto, 8);
+                        } else
+                        //Salto al final de cada pagina completa
+                            $pdf_doc->pdf->ezText("\n", 9);
+                        
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque de los DATOS DE GESTOR
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'titulo' => '<b>DATOS DEL GESTOR</b>'
+                                )
+                        );
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 10,
+                                    'cols' => array(
+                                        'titulo' => array('justification' => 'center')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 0,
+                                    'xOrientation' => 'center'
+                                )
+                        );                          
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque INFORMACION DE GESTOR
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_header(
+                                array(
+                                    'col1' => 'NOMBRE:',
+                                    'col2' => 'LUIS RIVAS, S.L.'
+                                )
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'col1' => 'CIF:',
+                                    'col2' => 'B-36.044.899'
+                                )
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'col1' => 'Nº DE AUTORIZACIÓN:',
+                                    'col2' => 'RIV-00/015'
+                                )
+                        );
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'col1' => 'DIRECCIÓN:',
+                                    'col2' => 'Avd. Peirao Besada, 45'
+                                )
+                        );                         
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'col1' => 'RESPONSABLE:',
+                                    'col2' => 'Luis Rivas García'
+                                )
+                        ); 
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'col1' => 'FIRMA Y SELLO:',
+                                    'col2' => '
+                                    
+
+
+
+
+'
+                                    
+                                )
+                        );                         
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 9,
+                                    'cols' => array(
+                                        'col1' => array('justification' => 'left'),
+                                        'col2' => array('justification' => 'left')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 2,
+                                    'xOrientation' => 'center'
+                                )
+                        );                     
+                        
+                        $pdf_doc->pdf->ezText("\n", 10);
+                        $pdf_doc->pdf->ezText("Sin otro particular, reciba un cordial saludo.", 10, array('aleft' => 30));
+                        /* ******************************************************************************************************************************************                        
+                         * 
+                         * Creamos el bloque de PROTECCION DE DATOS
+                         * 
+                         **************************************************************************************/
+                        $pdf_doc->new_table();
+                        $pdf_doc->add_table_row(
+                                array(
+                                    'texto' => 'En cumplimiento de la  LOPD, se advierte que los datos de carácter  personal se incluirán en los ficheros creados por LUIS RIVAS, S.L.    La finalidad de los ficheros es la correcta gestión de las relaciones comerciales y administrativas con los clientes derivados de la actividad de la empresa,   comercio   al mayor de chatarra y materiales de desecho, actualmente y en el futuro. El afectado podrá acceder a sus datos personales, rectificarlos o en su caso cancelarlos en LUIS RIVAS, S.L, Avenida Peirao Besada, 45 – 36005 – POIO (PONTEVEDRA); Telf.: 986 872 864, e-mail: info@luisrivas.es  como responsable del fichero.'
+                                )
+                        );
+                        $pdf_doc->save_table(
+                                array(
+                                    'fontSize' => 6,
+                                    'cols' => array(
+                                        'texto' => array('justification' => 'full')
+                                    ),
+                                    'shaded' => 0,
+                                    'width' => 540,
+                                    'showLines' => 0,
+                                    'xOrientation' => 'center'
+                                )
+                        );                          
+                    }
+                }else {
+                    $this->new_error_msg("No existen recogidas para este Productor entre estas fechas");
+                    return FALSE;
+                }
+                //Guardamos el archivo pdf
+                if ($this->filename) {
+                    if (!file_exists('tmp/' . FS_TMP_NAME . 'certificados'))
+                        mkdir('tmp/' . FS_TMP_NAME . 'certificados');
+
+                    $pdf_doc->save('tmp/' . FS_TMP_NAME . 'certificados/' . $this->filename);
+
+                    $this->new_message('PDF generado ' . $this->filename);
+                    return TRUE;
+                }
+
+                // ***********************************************************
+                // SALIDA
+                // Creamos el PDF y escribimos sus metadatos de SALIDA 
+                //    
+            } elseif ($_POST['tipo_id'] == 2) {
+                $this->filename = 'certificado_gestor' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
+
+                $pdf_doc = new fs_pdf();
+                $pdf_doc->pdf->selectFont('plugins/facturacion_base/extras/ezpdf/fonts/Times-Roman.afm');
+                $pdf_doc->pdf->ezSetMargins(2, 1, 1, 1);
+                $pdf_doc->pdf->addInfo('Title', 'Certificado ' . $this->zerofill($_POST['n_certificado'], 7));
+                $pdf_doc->pdf->addInfo('Subject', 'Certificado para Gestor - ' . $this->zerofill($_POST['n_certificado'], 7));
+                $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+
+                //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
+                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codcliente']);
+
+                if ($lineas) {
+                    return TRUE;                    
+                }
+
+            }
         }
-    } 
-    
+    }
+
     private function buscar_proveedor() {
         /// desactivamos la plantilla HTML
         $this->template = FALSE;
@@ -171,4 +604,19 @@ class recogidas_inforambiente extends fs_controller {
       
       return $status;
     }
+    
+    private function zerofill($valor, $longitud){
+        $res = str_pad($valor, $longitud, '0', STR_PAD_LEFT);
+        return $res;
+    }    
+    
+    private function fix_html($txt)
+    {    
+      $newt = str_replace('&lt;', '<', $txt);
+      $newt = str_replace('&gt;', '>', $newt);
+      $newt = str_replace('&quot;', '"', $newt);
+      $newt = str_replace('&#39;', "'", $newt);
+      return $newt;
+    }
+    
 }

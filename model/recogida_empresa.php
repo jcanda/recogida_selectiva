@@ -197,7 +197,7 @@ class recogida_empresa extends fs_model
          return FALSE;          
    }   
    
-   public function search($buscar='', $desde='', $hasta='', $tipo='todos',$orden="fecha")
+   public function search($buscar='', $desde='', $hasta='', $tipo='todos',$empresa_id='',$orden="fecha")
    {
       $entidadlist = array();
       
@@ -214,28 +214,34 @@ class recogida_empresa extends fs_model
       
       if($desde != '')
       {
-         $sql .= " AND fecha >= ".$this->var2str($desde);
+         $sql .= " AND `fecha` >= ".$this->var2str($desde);
       }
       
       if($hasta != '')
       {
-         $sql .= " AND fecha <= ".$this->var2str($hasta);
+         $sql .= " AND `fecha` <= ".$this->var2str($hasta);
       }       
       
       //Segundo compruebo el parametro tipo para filtrar
       if($tipo == "2")
       {
           //Si el parametro es 
-          $sql .= " AND tipo_id = ".$tipo;
+          $sql .= " AND `tipo_id` = ".$this->var2str($tipo);
       }
       else 
       {
           if($tipo == "1")
           {
-              $sql .= " AND tipo_id = ".$tipo;
+              $sql .= " AND `tipo_id` = ".$this->var2str($tipo);
           }
           //si no entra en ninguno de los 2 if anteriores muestra todos entrada y salida.
       }
+      
+      //Tercero miro si se especifica para una empresa concreto
+      if($empresa_id != ''){
+         $sql .= " AND `empresa_id` = ".$this->var2str($empresa_id); 
+      }
+      //Finalmente compruebo el orden
       $sql.= " ORDER BY ".$orden." DESC ";
       
       $data = $this->db->select($sql.";");

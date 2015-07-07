@@ -230,9 +230,9 @@ class recogida_certificado extends fs_model
         return false;
     }
     
-    public function lineas_certificado($desde='', $hasta=''){
+    public function lineas_certificado($desde='', $hasta='', $tipo=0, $empresa_id=''){
         $lineas = new recogida_empresa();
-        return $lineas->search('', $desde, $hasta);
+        return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, 'fecha');
     }
    
 }
