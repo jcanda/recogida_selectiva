@@ -176,23 +176,23 @@ class recogida_empresa extends fs_model
    }
 
    public function nombre_proveedor() {
-      $sql = "SELECT nombrecomercial FROM `proveedores` WHERE codproveedor = " . $this->var2str($this->empresa_id) . ";";
+      $sql = "SELECT nombre FROM `proveedores` WHERE codproveedor = " . $this->var2str($this->empresa_id) . ";";
         
       $data = $this->db->select($sql);
       
       if($data)
-         return $data[0]['nombrecomercial'];
+         return $data[0]['nombre'];
       else
          return FALSE;          
    }
 
    public function nombre_cliente() {
-      $sql = "SELECT nombrecomercial FROM `clientes` WHERE codcliente = " . $this->var2str($this->empresa_id) . ";";
+      $sql = "SELECT nombre FROM `clientes` WHERE codcliente = " . $this->var2str($this->empresa_id) . ";";
         
       $data = $this->db->select($sql);
       
       if($data)
-         return $data[0]['nombrecomercial'];
+         return $data[0]['nombre'];
       else
          return FALSE;          
    }   

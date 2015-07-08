@@ -12,7 +12,7 @@
  * @author Zapasoft
  */
 
-require_once 'plugins/facturacion_base/extras/fs_pdf.php';
+require_once 'plugins/recogida_selectiva/extras/fs_pdf.php';
 
 require_model('proveedor.php');
 require_model('cliente.php');
@@ -137,31 +137,22 @@ class recogidas_inforambiente extends fs_controller {
             // El resto de variasbles las cojo del POST N_certficado, FECHA
             //*************************************************************************
             if ($_POST['tipo_id'] == 1) {
-                $this->filename = 'certificado_productor' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
+                $almacen = '0002086';
+                $this->filename = 'certificado_productor'.$almacen.$ano.$this->zerofill($_POST['n_certificado'], 6) . '.pdf';
                 
                 $proveedor = new proveedor();
                 $proveedor_select = $proveedor->get($_POST['codproveedor']);
                 
                 $direccion = new direccion_proveedor();
-                $direccion_select = $direccion->get($_POST['direccion_id']);
-                
-                if( file_exists('plugins/recogida_selectiva/view/img/firma_luis.png') )
-                {
-                    //$pdf_doc->pdf->ezImage('plugins/recogida_selectiva/view/img/firma_luis.png', 500, 500, 'none');
-                }   
+                $direccion_select = $direccion->get($_POST['direccion_id']);  
                 
                 $pdf_doc = new fs_pdf();
-                $pdf_doc->pdf->selectFont('plugins/facturacion_base/extras/ezpdf/fonts/Times-Roman.afm');
+                $pdf_doc->pdf->selectFont('plugins/recogida_selectiva/extras/ezpdf/fonts/Times-Roman.afm');
                 $pdf_doc->pdf->ezSetMargins(2, 1, 1, 1);
-                $pdf_doc->pdf->addInfo('Title', 'Certificado ' . $this->zerofill($_POST['n_certificado'], 7));
-                $pdf_doc->pdf->addInfo('Subject', 'Certificado para Productor - ' . $this->zerofill($_POST['n_certificado'], 7));
+                $pdf_doc->pdf->addInfo('Title', 'Certificado ' . $almacen .$this->zerofill($_POST['n_certificado'], 6));
+                $pdf_doc->pdf->addInfo('Subject', 'Certificado para Productor - '. $almacen . $this->zerofill($_POST['n_certificado'], 6));
                 $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
-
-                /// ¿Añadimos el logo?
-                if( file_exists('tmp/'.FS_TMP_NAME.'firma_luis.png') )
-                {
-                    $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 10,10,157,49);
-                }                
+              
                 //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
                 $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor']);
 
@@ -176,6 +167,7 @@ class recogidas_inforambiente extends fs_controller {
                         /// salto de página
                         if ($linea_actual > 0) {
                             $pdf_doc->pdf->ezNewPage();
+                            $pdf_doc->pdf->ezText("\n", 11);
                             $pagina++;
                         }
                         /* ******************************************************************************************************************************************
@@ -191,7 +183,7 @@ class recogidas_inforambiente extends fs_controller {
                         $pdf_doc->add_table_header(
                                 array(
                                     'titulo' => '<b>COMPROBANTE DE ENTREGA Nº:</b>',
-                                    'codigo' => '<b>TNP303600002086' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '</b>'
+                                    'codigo' => '<b>TNP30360'.$almacen . $ano . $this->zerofill($_POST['n_certificado'], 6) . '</b>'
                                 )
                         );
                         $pdf_doc->save_table(
@@ -203,7 +195,7 @@ class recogidas_inforambiente extends fs_controller {
                                     ),
                                     'shaded' => 0,
                                     'width' => 540,
-                                    'gridLines' => 4,
+                                    'gridlines' => EZ_GRIDLINE_TABLE,
                                     'xOrientation' => 'center'
                                 )
                         );
@@ -378,8 +370,8 @@ class recogidas_inforambiente extends fs_controller {
                                     ),
                                     'alignHeadings' => 'center',
                                     'width' => 540,
-                                    'shaded' => 0,
-                                    'showLines' => 2,
+                                    'shaded' => 1,
+                                    'showLines' => 1,
                                     'xOrientation' => 'center'
                                 )
                         );
@@ -491,7 +483,7 @@ class recogidas_inforambiente extends fs_controller {
                                     ),
                                     'shaded' => 0,
                                     'width' => 540,
-                                    'showLines' => 2,
+                                    'gridlines' => EZ_GRIDLINE_ALL,
                                     'xOrientation' => 'center'
                                 )
                         );                     
@@ -521,6 +513,12 @@ class recogidas_inforambiente extends fs_controller {
                                     'xOrientation' => 'center'
                                 )
                         );                          
+                    
+                        /// ¿Añadimos la firma?
+                        if( file_exists('tmp/'.FS_TMP_NAME.'firma_luis.png') )
+                        {
+                            $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 350,122,157,49);
+                        }        
                     }
                 }else {
                     $this->new_error_msg("No existen recogidas para este Productor entre estas fechas");
@@ -545,7 +543,7 @@ class recogidas_inforambiente extends fs_controller {
                 $this->filename = 'certificado_gestor' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
 
                 $pdf_doc = new fs_pdf();
-                $pdf_doc->pdf->selectFont('plugins/facturacion_base/extras/ezpdf/fonts/Times-Roman.afm');
+                $pdf_doc->pdf->selectFont('plugins/recogida_selectiva/extras/ezpdf/fonts/Times-Roman.afm');
                 $pdf_doc->pdf->ezSetMargins(2, 1, 1, 1);
                 $pdf_doc->pdf->addInfo('Title', 'Certificado ' . $this->zerofill($_POST['n_certificado'], 7));
                 $pdf_doc->pdf->addInfo('Subject', 'Certificado para Gestor - ' . $this->zerofill($_POST['n_certificado'], 7));
