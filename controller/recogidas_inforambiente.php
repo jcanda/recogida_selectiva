@@ -7,7 +7,7 @@
  */
 
 /**
- * Description of Caja General
+ * Description of recogidas Medioambiente
  *
  * @author Zapasoft
  */
@@ -137,7 +137,7 @@ class recogidas_inforambiente extends fs_controller {
             // El resto de variasbles las cojo del POST N_certficado, FECHA
             //*************************************************************************
             if ($_POST['tipo_id'] == 1) {
-                $almacen = '0002086';
+                $almacen = $_POST['almacen'];
                 $this->filename = 'certificado_productor'.$almacen.$ano.$this->zerofill($_POST['n_certificado'], 6) . '.pdf';
                 
                 $proveedor = new proveedor();
@@ -154,7 +154,7 @@ class recogidas_inforambiente extends fs_controller {
                 $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
               
                 //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
-                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor']);
+                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor'], $_POST['direccion_id']);
 
                 if ($lineas) {
                     $lineasrecogidas = count($lineas);
@@ -167,7 +167,7 @@ class recogidas_inforambiente extends fs_controller {
                         /// salto de página
                         if ($linea_actual > 0) {
                             $pdf_doc->pdf->ezNewPage();
-                            $pdf_doc->pdf->ezText("\n", 11);
+                            $pdf_doc->pdf->ezText("\n", 10);
                             $pagina++;
                         }
                         /* ******************************************************************************************************************************************
@@ -400,7 +400,7 @@ class recogidas_inforambiente extends fs_controller {
                             $pdf_doc->pdf->ezText($salto, 8);
                         } else
                         //Salto al final de cada pagina completa
-                            $pdf_doc->pdf->ezText("\n", 9);
+                            $pdf_doc->pdf->ezText("\n", 10);
                         
                         /* ******************************************************************************************************************************************                        
                          * 
@@ -430,6 +430,13 @@ class recogidas_inforambiente extends fs_controller {
                          * Creamos el bloque INFORMACION DE GESTOR
                          * 
                          **************************************************************************************/
+                        if ($almacen == '0002086')
+                            $direccion_gestor = 'Avd. Peirao Besada, 45 (36163) POIO';
+                        else
+                            $direccion_gestor = 'Rúa As Mámoas, 41 Parc-B81 (36158) MARCÓN';
+                        
+                        $autorización = $_POST['n_autorizacion'];
+                        
                         $pdf_doc->new_table();
                         $pdf_doc->add_table_header(
                                 array(
@@ -446,13 +453,13 @@ class recogidas_inforambiente extends fs_controller {
                         $pdf_doc->add_table_row(
                                 array(
                                     'col1' => 'Nº DE AUTORIZACIÓN:',
-                                    'col2' => 'RIV-00/015'
+                                    'col2' => $autorización
                                 )
                         );
                         $pdf_doc->add_table_row(
                                 array(
                                     'col1' => 'DIRECCIÓN:',
-                                    'col2' => 'Avd. Peirao Besada, 45'
+                                    'col2' => $direccion_gestor
                                 )
                         );                         
                         $pdf_doc->add_table_row(
@@ -517,7 +524,7 @@ class recogidas_inforambiente extends fs_controller {
                         /// ¿Añadimos la firma?
                         if( file_exists('tmp/'.FS_TMP_NAME.'firma_luis.png') )
                         {
-                            $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 350,122,157,49);
+                            $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 350,120,157,49);
                         }        
                     }
                 }else {

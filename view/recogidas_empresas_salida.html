@@ -17,7 +17,7 @@
              }
             }
         });         
-        document.f_edita_entidad.fecha.focus();
+        document.f_edita_entidad.direccion_id.focus();
     });
 </script>
 
@@ -44,7 +44,17 @@
                     <input class="form-control" type="text" name="nombre_cliente" value="{$fsc->resultado->nombre}" disabled="disabled" />
                 </div>
             </div> 
-            <div class="col-md-3">
+            <div class="col-md-4">        
+                <div class="form-group">
+                    Dirección:
+                    <select name="direccion_id" id="direccion_id" class="form-control" >
+                        {loop="fsc->direcciones"}
+                            <option value="{$value->id}" {if="$fsc->resultado->direccion_id == $value->id"} selected{/if}>{$value->direccion}</option>
+                        {/loop}
+                    </select>
+                </div>
+            </div>             
+            <div class="col-md-2">
                 <div class="form-group">
                     <span class="glyphicon glyphicon-calendar"></span>
                     Fecha:
@@ -63,36 +73,36 @@
                         </span>
                     </div>                  
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    Código LER:
-                    <input class="form-control" type="text" name="ler_ambiente" value="{$fsc->resultado->ler_ambiente}"/>
-                </div>
             </div>            
         </div>
         
         
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <div class="form-group">
+                    Código LER:
+                    <input class="form-control" type="text" name="ler_ambiente" value="{$fsc->resultado->ler_ambiente}"/>
+                </div>
+            </div>            
+            <div class="col-md-4">
                 <div class="form-group">
                     Descripción Medio Ambiente:
                     <input class="form-control" type="text" name="descrip_ambiente" value="{$fsc->resultado->descrip_ambiente}"/>
                 </div>
             </div>            
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="form-group">
                     Entrada:
                     <input class="form-control" type="text" name="entrada" value="{$fsc->resultado->entrada}" disabled="disabled"/>
                 </div>
             </div> 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="form-group">
                     Salida:
                     <input class="form-control" type="text" name="salida" value="{$fsc->resultado->salida}"/>
                 </div>
             </div> 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="form-group">
                     Matricula:
                     <input class="form-control" type="text" name="matricula" value="{$fsc->resultado->matricula}"/>

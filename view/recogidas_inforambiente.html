@@ -1,4 +1,6 @@
 {include="header"}
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.min.js"></script>
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.widgets.min.js"></script>
 
 <ul class="nav nav-tabs">
     <li role="presentation"{if="$fsc->pestanya=='cert_in'"} class="active"{/if}>
@@ -56,6 +58,13 @@
             }
         });
         document.f_inforambiente.ac_proveedor.focus();
+        
+        $("#myTable").tablesorter({
+            widgets        : ['zebra', 'columns'],
+            usNumberFormat : false,
+            sortReset      : true,
+            sortRestart    : true
+        });        
     });
 
     function delete_certificado(id)
@@ -108,22 +117,33 @@
         <div class="row">
             <div class="col-sm-3">
                 <div class="form-group">
+                    Almacen:
+                    <select name="almacen" id="almacen" class="form-control" >
+                        <option value="0002086">POIO</option>
+                        <option value="0022380">CAMPIÑO</option>
+                    </select>
+                </div>
+            </div>             
+            <div class="col-sm-3">
+                <div class="form-group">
                     Nº Certificado:
                     <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_in()}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="form-group">
-                    Fecha Certificado:
-                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->fecha}" id="fecha" placeholder="Si no indica por defecto hoy" autocomplete="off"/>
+                    Nº Autorización:
+                    <input class="form-control" type="text" name="n_autorizacion" value="{$fsc->n_autorizacion}" id="n_autorizacion" placeholder="RIV-00/015" autocomplete="off"/>
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-3">
                 <div class="form-group">
-                    Observaciones:
-                    <textarea class="form-control" name="observaciones" rows="1"></textarea>
+                    Visualizar año:
+                    <select name="ano" id="ano" class="form-control" >
+                        <option value="2015">2015</option>
+                    </select>
                 </div>
-            </div>           
+            </div>            
         </div>
         <div class="row">
             <div class="col-sm-12">
@@ -137,24 +157,25 @@
     {if="$fsc->resultados"}
     <br/>
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover" id="myTable">
             <thead>
                 <tr>
                     <th>Nº Certificado</th>
                     <th>Fecha</th>
                     <th>Empresa</th>
+                    <th>Dirección</th>
                     <th>Certificado</th>
-                    <th>Observaciones</th>
                     {if="$fsc->allow_delete"} <th class="text-right">Acciones</th> {/if}
                 </tr>
             </thead>
+
             {loop="$fsc->resultados"}
             <tr>
                 <td>{$value->n_certificado}</td>
                 <td>{$value->fecha}</td>
                 <td>{$value->nombre}</td>
+                <td>{$value->direccion_proveedor()}</td>                
                 <td><a href="{$fsc->link}{$value->link}" target="_blank">Visualizar Certificado</a></td>                
-                <td>{$value->observaciones2}</td>
                 {if="$fsc->allow_delete"}
                 <td class="text-right">
                     <a href="#" class="btn btn-xs btn-danger" title="Eliminar" onclick="delete_certificado('{$value->id}')">
@@ -284,8 +305,8 @@
                     <th>Nº Certificado</th>
                     <th>Fecha</th>
                     <th>Empresa</th>
+                    <th>Dirección</th>                    
                     <th>Certificado</th>
-                    <th>Observaciones</th>
                     {if="$fsc->allow_delete"} <th class="text-right">Acciones</th> {/if}
                 </tr>
             </thead>
@@ -294,8 +315,8 @@
                 <td>{$value->n_certificado}</td>
                 <td>{$value->fecha}</td>
                 <td>{$value->nombre}</td>
+                <td>{$value->direccion_cliente()}</td>
                 <td><a href="{$value->link}" target="_blank">Visualizar Certificado</a></td>                
-                <td>{$value->observaciones2}</td>
                 {if="$fsc->allow_delete"}
                 <td class="text-right">
                     <a href="#" class="btn btn-xs btn-danger" title="Eliminar" onclick="delete_certificado('{$value->id}')">

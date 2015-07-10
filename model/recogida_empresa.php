@@ -11,6 +11,7 @@ class recogida_empresa extends fs_model
    public $recogida_id;
    public $fecha;
    public $empresa_id;
+   public $direccion_id;
    public $articulo_id;
    public $ler_ambiente;
    public $descrip_ambiente;
@@ -32,6 +33,7 @@ class recogida_empresa extends fs_model
                 $this->fecha = date('d-m-Y', strtotime($a['fecha'])); 
             
             $this->empresa_id = $a['empresa_id'];
+            $this->direccion_id = $a['direccion_id'];
             $this->articulo_id = $a['articulo_id'];
             $this->ler_ambiente = $a['ler_ambiente'];
             $this->descrip_ambiente = $this->no_html($a['descrip_ambiente']);
@@ -44,6 +46,7 @@ class recogida_empresa extends fs_model
             $this->recogida_id = 0;
             $this->fecha = date('d-m-Y');
             $this->empresa_id = NULL;
+            $this->direccion_id = NULL;
             $this->articulo_id = NULL;
             $this->ler_ambiente = NULL;
             $this->descrip_ambiente = NULL;
@@ -70,7 +73,7 @@ class recogida_empresa extends fs_model
             if ($this->exists()) {
                 
                 $sql = "UPDATE recogida_empresa SET fecha = " . $this->var2str($this->fecha) . ",
-               empresa_id = " . $this->var2str($this->empresa_id) . ", articulo_id = " . $this->var2str($this->articulo_id) . ",
+               empresa_id = " . $this->var2str($this->empresa_id) . ", articulo_id = " . $this->var2str($this->articulo_id) . ", direccion_id = ".$this->var2str($this->direccion_id).",
                ler_ambiente = " . $this->var2str($this->ler_ambiente) .",  descrip_ambiente = " . $this->var2str($this->descrip_ambiente) . ", 
                entrada_empresa = " . $this->var2str($this->entrada_empresa) . ", salida_empresa = " . $this->var2str($this->salida_empresa) . ",
                tipo_id = " . $this->var2str($this->tipo_id) . ", matricula = " . $this->var2str($this->matricula) . ",    
@@ -79,12 +82,12 @@ class recogida_empresa extends fs_model
                 return $this->db->exec($sql);
                 
             } else {
-                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `articulo_id`,`ler_ambiente`,`descrip_ambiente`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`) 
+                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `articulo_id`,`ler_ambiente`,`descrip_ambiente`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`,`direccion_id`) 
                VALUES (" . $this->var2str($this->fecha) . "," . $this->var2str($this->empresa_id) . ",
                " . $this->var2str($this->articulo_id) . "," . $this->var2str($this->ler_ambiente) . ",
                " . $this->var2str($this->descrip_ambiente) . "," . $this->var2str($this->entrada_empresa) . ",
                " . $this->var2str($this->salida_empresa) . "," . $this->var2str($this->tipo_id) . ",
-               " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ");";
+               " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ",".$this->var2str($this->direccion_id).");";
 
                 if ($this->db->exec($sql)) {
                     $this->recogida_id = $this->db->lastval();
@@ -128,7 +131,7 @@ class recogida_empresa extends fs_model
    public function all($offset=0, $limit=FS_ITEM_LIMIT) {
         $recogidas = array();
         
-        $sql = "SELECT * FROM recogida_empresa WHERE 1 ORDER BY recogida_id DESC";
+        $sql = "SELECT * FROM recogida_empresa WHERE 1 ORDER BY fecha DESC";
         
         $data = $this->db->select_limit($sql, $limit, $offset);
         
@@ -197,7 +200,7 @@ class recogida_empresa extends fs_model
          return FALSE;          
    }   
    
-   public function search($buscar='', $desde='', $hasta='', $tipo='todos',$empresa_id='',$orden="fecha")
+   public function search($buscar='', $desde='', $hasta='', $tipo='todos',$empresa_id='',$direccion_id='', $orden="fecha")
    {
       $entidadlist = array();
       
@@ -241,6 +244,12 @@ class recogida_empresa extends fs_model
       if($empresa_id != ''){
          $sql .= " AND `empresa_id` = ".$this->var2str($empresa_id); 
       }
+      
+      //Cuarto miro si se especifica direccion una empresa concreto
+      if($direccion_id != ''){
+         $sql .= " AND `direccion_id` = ".$this->var2str($direccion_id); 
+      }      
+      
       //Finalmente compruebo el orden
       $sql.= " ORDER BY ".$orden." DESC ";
       

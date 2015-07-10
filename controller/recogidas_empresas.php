@@ -23,6 +23,7 @@ class recogidas_empresas extends fs_controller
    public $recogidas_model;
    public $cliente;
    public $proveedor;
+   public $direcciones;
    public $articulos;
    public $pais;
    public $resultado;
@@ -128,6 +129,7 @@ class recogidas_empresas extends fs_controller
                         $this->template = "recogidas_empresas";
                     }else{
                         $this->resultado = $this->proveedor->get($_GET['codproveedor']);
+                        $this->direcciones = $this->resultado->get_direcciones();
                         $this->template = "recogidas_empresas_entrada"; 
                     }
                 }
@@ -171,6 +173,7 @@ class recogidas_empresas extends fs_controller
                         $this->template = "recogidas_empresas";
                     }else{
                         $this->resultado = $this->cliente->get($_GET['codcliente']);
+                        $this->direcciones = $this->resultado->get_direcciones();
                         $this->template = "recogidas_empresas_salida"; 
                     }
                 }                
@@ -322,7 +325,7 @@ class recogidas_empresas extends fs_controller
             $this->recogidas_model->salida_empresa = floatval($_POST['salida']);
             $this->recogidas_model->tipo_id = 2;
         }
-
+        $this->recogidas_model->direccion_id = $_POST['direccion_id'];
         $this->recogidas_model->articulo_id = $_POST['articulo_id'];
         $this->recogidas_model->ler_ambiente = $_POST['ler_ambiente'];
         $this->recogidas_model->descrip_ambiente = $_POST['descrip_ambiente'];
@@ -342,6 +345,14 @@ class recogidas_empresas extends fs_controller
         // edita una entidad 
         //----------------------------------------------
         $this->resultado = $this->recogidas_model->get($_GET['id']);
+        
+        if ($this->resultado->tipo_id == 1){
+            $proveedor_select = $this->proveedor->get($this->resultado->empresa_id);
+            $this->direcciones = $proveedor_select->get_direcciones();
+        }elseif($this->resultado->tipo_id == 2){
+            $cliente_select = $this->cliente->get($this->resultado->empresa_id);
+            $this->direcciones = $cliente_select->get_direcciones();
+        }
 
         if ($this->resultado) {
             $this->agente = $this->user->get_agente();
@@ -355,6 +366,7 @@ class recogidas_empresas extends fs_controller
             if ($_POST['fecha'] != '')
                 $this->resultado->fecha = $_POST['fecha'];
 
+            $this->resultado->direccion_id = $_POST['direccion_id'];
             $this->resultado->ler_ambiente = $_POST['ler_ambiente'];
             $this->resultado->descrip_ambiente = $_POST['descrip_ambiente'];
             $this->resultado->entrada_empresa = floatval($_POST['entrada']);

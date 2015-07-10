@@ -166,14 +166,16 @@ class recogida_certificado extends fs_model
     }
     public function get_all_in()
     {
-        return $this->parse($this->db->select("SELECT * FROM "
-                . "{$this->table_name} INNER JOIN proveedores ON {$this->table_name}.empresa_id = proveedores.codproveedor "
+        return $this->parse($this->db->select("SELECT {$this->table_name}.*, proveedores.nombre, dirproveedores.direccion FROM "
+                . "{$this->table_name} INNER JOIN proveedores ON proveedores.codproveedor = {$this->table_name}.empresa_id "
+                . " INNER JOIN dirproveedores ON  dirproveedores.id = {$this->table_name}.direccion_id "
                 . "WHERE {$this->table_name}.tipo_id = 1 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
     }
     public function get_all_out()
     {
-        return $this->parse($this->db->select("SELECT * FROM "
-                . "{$this->table_name} INNER JOIN clientes ON {$this->table_name}.empresa_id = clientes.codcliente "
+        return $this->parse($this->db->select("SELECT {$this->table_name}.*, clientes.nombre, dirclientes.direccion FROM "
+                . "{$this->table_name} INNER JOIN clientes ON  clientes.codcliente = {$this->table_name}.empresa_id "
+                . " INNER JOIN dirclientes ON dirclientes.id = {$this->table_name}.direccion_id "
                 . "WHERE {$this->table_name}.tipo_id = 2 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
         }    
     public function parse($items, $array = false)
@@ -230,9 +232,30 @@ class recogida_certificado extends fs_model
         return false;
     }
     
-    public function lineas_certificado($desde='', $hasta='', $tipo=0, $empresa_id=''){
+    public function lineas_certificado($desde='', $hasta='', $tipo=0, $empresa_id='', $direccion_id=''){
         $lineas = new recogida_empresa();
-        return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, 'fecha');
+        return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, $direccion_id,'fecha');
     }
    
+   public function direccion_proveedor() {
+      $sql = "SELECT direccion FROM `dirproveedores` WHERE id = " . $this->var2str($this->direccion_id) . ";";
+        
+      $data = $this->db->select($sql);
+      
+      if($data)
+         return $data[0]['direccion'];
+      else
+         return FALSE;          
+   }    
+
+   public function direccion_cliente() {
+      $sql = "SELECT direccion FROM `dirclientes` WHERE id = " . $this->var2str($this->direccion_id) . ";";
+        
+      $data = $this->db->select($sql);
+      
+      if($data)
+         return $data[0]['direccion'];
+      else
+         return FALSE;          
+   }   
 }
