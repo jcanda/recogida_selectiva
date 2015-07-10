@@ -19,6 +19,7 @@ class recogida_certificado extends fs_model
     var $tipo_id;
     //Variable para recoger el nombre del Cliente o Proveedor
     var $nombre;
+    var $direccion;
 
     public function __construct($data=FALSE)
     {
@@ -36,6 +37,7 @@ class recogida_certificado extends fs_model
             $this->link = $data['link'];
             $this->tipo_id = $this->str2bool($data['tipo_id']);
             $this->nombre = $data['nombre'];
+            $this->direccion = $data['direccion'];
         }else{
             $this->id = 0;
             $this->n_certificado = 0;
@@ -46,6 +48,7 @@ class recogida_certificado extends fs_model
             $this->link = NULL;
             $this->tipo_id = 0;
             $this->nombre = NULL;
+            $this->direccion = NULL;
         }
     }
 
@@ -237,25 +240,4 @@ class recogida_certificado extends fs_model
         return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, $direccion_id,'fecha');
     }
    
-   public function direccion_proveedor() {
-      $sql = "SELECT direccion FROM `dirproveedores` WHERE id = " . $this->var2str($this->direccion_id) . ";";
-        
-      $data = $this->db->select($sql);
-      
-      if($data)
-         return $data[0]['direccion'];
-      else
-         return FALSE;          
-   }    
-
-   public function direccion_cliente() {
-      $sql = "SELECT direccion FROM `dirclientes` WHERE id = " . $this->var2str($this->direccion_id) . ";";
-        
-      $data = $this->db->select($sql);
-      
-      if($data)
-         return $data[0]['direccion'];
-      else
-         return FALSE;          
-   }   
 }

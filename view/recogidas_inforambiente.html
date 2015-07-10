@@ -174,7 +174,7 @@
                 <td>{$value->n_certificado}</td>
                 <td>{$value->fecha}</td>
                 <td>{$value->nombre}</td>
-                <td>{$value->direccion_proveedor()}</td>                
+                <td>{$value->direccion}</td>                
                 <td><a href="{$fsc->link}{$value->link}" target="_blank">Visualizar Certificado</a></td>                
                 {if="$fsc->allow_delete"}
                 <td class="text-right">
@@ -315,7 +315,7 @@
                 <td>{$value->n_certificado}</td>
                 <td>{$value->fecha}</td>
                 <td>{$value->nombre}</td>
-                <td>{$value->direccion_cliente()}</td>
+                <td>{$value->direccion}</td>
                 <td><a href="{$value->link}" target="_blank">Visualizar Certificado</a></td>                
                 {if="$fsc->allow_delete"}
                 <td class="text-right">
