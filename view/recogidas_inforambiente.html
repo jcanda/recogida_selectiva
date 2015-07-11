@@ -15,18 +15,12 @@
             <span class="hidden-xs">&nbsp; Certificados Salida</span>
         </a>
     </li>
-    <li role="presentation"{if="$fsc->pestanya=='graf'"} class="active"{/if}>
-        <a href="{$fsc->url()}&tab=graf">
-            <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>  
-            <span class="hidden-xs">&nbsp; Gráficos</span>
-        </a>
-    </li>   
-    <li role="presentation"{if="$fsc->pestanya=='list'"} class="active"{/if}>
-        <a href="{$fsc->url()}&tab=list">
+    <li role="presentation"{if="$fsc->pestanya=='just'"} class="active"{/if}>
+        <a href="{$fsc->url()}&tab=just">
             <span class="glyphicon glyphicon-search" aria-hidden="true"></span>         
-            <span class="hidden-xs">&nbsp; Listados</span>
+            <span class="hidden-xs">&nbsp; Justificantes</span>
         </a>
-    </li>
+    </li>    
 </ul>
 
 {if="$fsc->pestanya=='cert_in'"}
@@ -133,7 +127,12 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     Nº Autorización:
-                    <input class="form-control" type="text" name="n_autorizacion" value="{$fsc->n_autorizacion}" id="n_autorizacion" placeholder="RIV-00/015" autocomplete="off"/>
+                    <select name="n_autorizacion" id="n_autorizacion" class="form-control" >
+                        <option value=""></option>
+                        {loop="$fsc->autorizaciones"}
+                            <option value="{$value->id_aut}">{$value->concepto_aut} ({$value->autorizacion})</option>
+                        {/loop}
+                    </select>
                 </div>
             </div>
             <div class="col-sm-3">
@@ -330,13 +329,9 @@
     </div>
     {/if}
 </form>
-{elseif="$fsc->pestanya=='graf'"}
+{elseif="$fsc->pestanya=='just'"}
 <div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
-    Graficos
-</div>
-{elseif="$fsc->pestanya=='list'"}
-<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
-    Listados
+    Justificantes
 </div>
 {/if}
 

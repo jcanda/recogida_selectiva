@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : recogida_autorizacion.xml
+    Description:
+        Estructura de la tabla recogida_autorizacion.
+-->
+<tabla>
+    <columna>
+        <nombre>id_aut</nombre>
+        <tipo>serial</tipo>
+        <nulo>NO</nulo>
+        <defecto>nextval('recogida_autorizacion_id_aut_seq'::regclass)</defecto>
+    </columna>
+    <columna>
+        <nombre>autorizacion</nombre>
+        <tipo>varchar(50)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>concepto_aut</nombre>
+        <tipo>varchar(100)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>cod_operacion</nombre>
+        <tipo>varchar(100)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <columna>
+        <nombre>almacen_aut</nombre>
+        <tipo>tinyint(4)</tipo>
+        <nulo>NO</nulo>
+    </columna>
+    <restriccion>
+        <nombre>recogida_autorizacion_pkey</nombre>
+        <consulta>PRIMARY KEY (id_aut)</consulta>
+    </restriccion>
+</tabla>
+

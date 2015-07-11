@@ -17,6 +17,7 @@ require_once 'plugins/recogida_selectiva/extras/fs_pdf.php';
 require_model('proveedor.php');
 require_model('cliente.php');
 require_model('recogida_certificado.php');
+require_model('recogida_autorizacion.php');
 
 class recogidas_inforambiente extends fs_controller {
 
@@ -28,9 +29,10 @@ class recogidas_inforambiente extends fs_controller {
     public $recogidas_model;
     public $filename;
     public $link;
+    public $autorizaciones;
 
     public function __construct() {
-        parent::__construct(__CLASS__, 'Informe MedioAmbiente', 'recogida selectiva', FALSE, TRUE);
+        parent::__construct(__CLASS__, 'Certificados M. Ambiente', 'recogida selectiva', FALSE, TRUE);
         /// cualquier cosa que pongas aquí se ejecutará DESPUÉS de process()
     }
 
@@ -50,7 +52,11 @@ class recogidas_inforambiente extends fs_controller {
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         
-        $this->recogidas_model = new recogida_certificado();         
+        $this->recogidas_model = new recogida_certificado();
+        
+        $autorizacion = new recogida_autorizacion ();
+        $this->autorizaciones = $autorizacion->get_all();
+        
         $this->link = "https://gestion.luisrivas.es/tmp/".FS_TMP_NAME."certificados/";
         
         if (isset($_REQUEST['buscar_proveedor'])) {
@@ -144,7 +150,10 @@ class recogidas_inforambiente extends fs_controller {
                 $proveedor_select = $proveedor->get($_POST['codproveedor']);
                 
                 $direccion = new direccion_proveedor();
-                $direccion_select = $direccion->get($_POST['direccion_id']);  
+                $direccion_select = $direccion->get($_POST['direccion_id']);
+                
+                $autorizacion = new recogida_autorizacion();
+                $autorizacion_select = $autorizacion->get($_POST['n_autorizacion']);
                 
                 $pdf_doc = new fs_pdf();
                 $pdf_doc->pdf->selectFont('plugins/recogida_selectiva/extras/ezpdf/fonts/Times-Roman.afm');
@@ -347,7 +356,7 @@ class recogidas_inforambiente extends fs_controller {
                             $fila = array(
                                 'fecha' => date("d/m/Y", strtotime($lineas[$linea_actual]->fecha)),
                                 'ler' => $lineas[$linea_actual]->ler_ambiente,
-                                'codigo_operacion' => 'R4: valoración',
+                                'codigo_operacion' => $autorizacion_select->cod_operacion,
                                 'descripcion' => '  ' . $this->fix_html($lineas[$linea_actual]->descrip_ambiente),
                                 'notas' => $this->fix_html($lineas[$linea_actual]->notas),
                                 'cantidad' => $this->show_numero($lineas[$linea_actual]->entrada_empresa, 2)
@@ -363,7 +372,7 @@ class recogidas_inforambiente extends fs_controller {
                                     'cols' => array(
                                         'fecha' => array('justification' => 'center', 'width' => 60),
                                         'ler' => array('justification' => 'center', 'width' => 50),
-                                        'codigo_operacion' => array('justification' => 'center', 'width' => 80),
+                                        'codigo_operacion' => array('justification' => 'center', 'width' => 90),
                                         'descripcion' => array('justification' => 'left', 'width' => 180),
                                         'notas' => array('justification' => 'left'),
                                         'cantidad' => array('justification' => 'right', 'width' => 60)
@@ -435,8 +444,6 @@ class recogidas_inforambiente extends fs_controller {
                         else
                             $direccion_gestor = 'Rúa As Mámoas, 41 Parc-B81 (36158) MARCÓN';
                         
-                        $autorización = $_POST['n_autorizacion'];
-                        
                         $pdf_doc->new_table();
                         $pdf_doc->add_table_header(
                                 array(
@@ -453,7 +460,7 @@ class recogidas_inforambiente extends fs_controller {
                         $pdf_doc->add_table_row(
                                 array(
                                     'col1' => 'Nº DE AUTORIZACIÓN:',
-                                    'col2' => $autorización
+                                    'col2' => $autorizacion_select->autorizacion
                                 )
                         );
                         $pdf_doc->add_table_row(

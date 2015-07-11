@@ -1,0 +1,30 @@
+{include="header"}
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.min.js"></script>
+<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.widgets.min.js"></script>
+
+<ul class="nav nav-tabs">
+    <li role="presentation"{if="$fsc->pestanya=='graf'"} class="active"{/if}>
+        <a href="{$fsc->url()}&tab=graf">
+            <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>  
+            <span class="hidden-xs">&nbsp; Gráficos</span>
+        </a>
+    </li>   
+    <li role="presentation"{if="$fsc->pestanya=='list'"} class="active"{/if}>
+        <a href="{$fsc->url()}&tab=list">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>         
+            <span class="hidden-xs">&nbsp; Listados</span>
+        </a>
+    </li>  
+</ul>
+
+{if="$fsc->pestanya=='graf'"}
+<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
+    Graficos
+</div>
+{elseif="$fsc->pestanya=='list'"}
+<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
+    Listados
+</div>
+{/if}
+
+{include="footer"}

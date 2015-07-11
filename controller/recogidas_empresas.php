@@ -220,8 +220,10 @@ class recogidas_empresas extends fs_controller
         //Para BUSCAR entrada o salida O FILTRAR
         else if (isset($_POST['buscar'])){
             $this->busqueda['filtro_tipo'] = $_POST['filtro_tipo'];
+            $this->busqueda['desde'] = $_POST['desde'];
+            $this->busqueda['hasta'] = $_POST['hasta'];
             
-            $this->resultado = $this->recogidas_model->search($_POST['buscar'], '','', $this->busqueda['filtro_tipo']);
+            $this->resultado = $this->recogidas_model->search($_POST['buscar'], $this->busqueda['desde'],$this->busqueda['hasta'], $this->busqueda['filtro_tipo']);
             $this->template = "recogidas_empresas";        
         }else {
             //Si no entro en ningun otra opcion: listar todo
