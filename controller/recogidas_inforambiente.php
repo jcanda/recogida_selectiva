@@ -66,16 +66,16 @@ class recogidas_inforambiente extends fs_controller {
         if (isset($_POST['ano'])) {
             $this->ano = $_POST['ano'];           
         }
-
-        // Compruebo el ANO seleccionado con la FECHA del certificado y simplemte AVISO
-        if($this->ano != date ("Y") AND $this->ano != date ("Y",strtotime ($_POST['fecha'])))
-                $this->new_advice('OJO! El año seleccionado no coincide con el año actual...');
-        
+               
         // ¿el año esta cerrado?
         if($this->ano != date ("Y")){
             // Cargo configuracion de si año cerrado o no
             $this->allow_outano = TRUE;
             
+            $this->new_advice('OJO! El año seleccionado no coincide con el año actual...');
+            if($this->ano != date ("Y",strtotime ($_POST['fecha'])) AND ($_POST['codproveedor']>0 OR $_POST['codcliente']>0))
+                    $this->new_error_msg('Fecha del certificado no esta dentro del año seleccionado...');
+                    
             if(!$this->allow_outano)
                 $this->new_error_msg('Año cerrado: no se permite la realizacion de nuevos certificados en este año.');
         }
@@ -90,7 +90,7 @@ class recogidas_inforambiente extends fs_controller {
             $this->buscar_proveedor();
         }elseif(isset($_REQUEST['buscar_cliente'])) {
             $this->buscar_cliente();
-        }elseif($this->ano == date ("Y",strtotime ($_POST['fecha'])) AND $this->allow_outano AND (isset ($_POST['codproveedor']) OR isset($_POST['codcliente']))){
+        }elseif($this->ano == date ("Y",strtotime ($_POST['fecha'])) AND $this->allow_outano AND ($_POST['codproveedor']>0 OR $_POST['codcliente']>0 )){
             //Genero certificado pdf
             if ($this->genera_pdf())
                 // Luego guardo registro si OK

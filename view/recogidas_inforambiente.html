@@ -143,10 +143,11 @@
             </div>            
             <div class="col-sm-2">
                 <div class="form-group">
-                    Visualizar año:
+                    Seleccionar año:
                     <select name="ano" id="ano" class="form-control" onchange="this.form.submit();">
-                        <option value="{$fsc->ano}">{$fsc->ano}</option>
-                        <option value="2014">2014</option>
+                        {loop="$fsc->recogidas_model->lista_anos(1)"}
+                        <option value="{$value->anos}" {if="$fsc->ano == $value->anos"}selected{/if}>{$value->anos}</option>
+                        {/loop}
                     </select>
                 </div>
             </div>            

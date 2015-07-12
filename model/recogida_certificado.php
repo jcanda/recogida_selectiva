@@ -20,6 +20,8 @@ class recogida_certificado extends fs_model
     //Variable para recoger el nombre del Cliente o Proveedor
     var $nombre;
     var $direccion;
+    //Variable para recoger los años que existen
+    var $anos;
 
     public function __construct($data=FALSE)
     {
@@ -38,6 +40,7 @@ class recogida_certificado extends fs_model
             $this->tipo_id = $this->str2bool($data['tipo_id']);
             $this->nombre = $data['nombre'];
             $this->direccion = $data['direccion'];
+            $this->anos = $data['anos'];
         }else{
             $this->id = 0;
             $this->n_certificado = 0;
@@ -49,6 +52,7 @@ class recogida_certificado extends fs_model
             $this->tipo_id = 0;
             $this->nombre = NULL;
             $this->direccion = NULL;
+            $this->anos = NULL;
         }
     }
 
@@ -245,6 +249,11 @@ class recogida_certificado extends fs_model
     public function lineas_certificado($desde='', $hasta='', $tipo=0, $empresa_id='', $direccion_id=''){
         $lineas = new recogida_empresa();
         return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, $direccion_id,'fecha');
+    }
+    
+    public function lista_anos($tipo = 0){
+        $tipo = $this->var2str($tipo);
+        return $this->parse($this->db->select("SELECT DISTINCT YEAR(fecha) AS anos FROM {$this->table_name} WHERE tipo_id = $tipo ORDER BY anos DESC;"),TRUE);
     }
    
 }
