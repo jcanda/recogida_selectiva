@@ -26,10 +26,13 @@ class recogidas_inforambiente extends fs_controller {
     public $hasta;
     public $resultados;
     public $allow_delete;
+    public $allow_outano;
     public $recogidas_model;
     public $filename;
     public $link;
     public $autorizaciones;
+    public $ano;
+    public $fecha;
 
     public function __construct() {
         parent::__construct(__CLASS__, 'Certificados M. Ambiente', 'recogida selectiva', FALSE, TRUE);
@@ -52,8 +55,32 @@ class recogidas_inforambiente extends fs_controller {
         /// ¿El usuario tiene permiso para eliminar en esta página?
         $this->allow_delete = $this->user->allow_delete_on(__CLASS__);
         
+        //Cargamos modelo vacio
         $this->recogidas_model = new recogida_certificado();
         
+        //Año por defecto el actual y fecha actual
+        $this->allow_outano = TRUE;
+        $this->ano = date ("Y");
+        $this->fecha = date("d-m-Y");
+        //Capturo año si se especifica
+        if (isset($_POST['ano'])) {
+            $this->ano = $_POST['ano'];           
+        }
+
+        // Compruebo el ANO seleccionado con la FECHA del certificado y simplemte AVISO
+        if($this->ano != date ("Y") AND $this->ano != date ("Y",strtotime ($_POST['fecha'])))
+                $this->new_advice('OJO! El año seleccionado no coincide con el año actual...');
+        
+        // ¿el año esta cerrado?
+        if($this->ano != date ("Y")){
+            // Cargo configuracion de si año cerrado o no
+            $this->allow_outano = TRUE;
+            
+            if(!$this->allow_outano)
+                $this->new_error_msg('Año cerrado: no se permite la realizacion de nuevos certificados en este año.');
+        }
+        
+        //Cargamos listado de autorizaciones
         $autorizacion = new recogida_autorizacion ();
         $this->autorizaciones = $autorizacion->get_all();
         
@@ -63,13 +90,12 @@ class recogidas_inforambiente extends fs_controller {
             $this->buscar_proveedor();
         }elseif(isset($_REQUEST['buscar_cliente'])) {
             $this->buscar_cliente();
-        }elseif(isset ($_POST['codproveedor']) OR isset ($_POST['codcliente'])){
+        }elseif($this->ano == date ("Y",strtotime ($_POST['fecha'])) AND $this->allow_outano AND (isset ($_POST['codproveedor']) OR isset($_POST['codcliente']))){
             //Genero certificado pdf
             if ($this->genera_pdf())
                 // Luego guardo registro si OK
                 $this->nuevo_certificado();
-            else
-                $this->new_error_msg('Error generando PDF del Certificado.');  
+
         }elseif (isset($_GET['delete_certificado'])){    
             //Eliminar certificado luego enseño
             $certificado = $this->recogidas_model->get($_GET['delete_certificado']);
@@ -87,9 +113,9 @@ class recogidas_inforambiente extends fs_controller {
         
         //cargamos nuestro modelo vacio de tabla recogidas_certificado  
         if($this->pestanya == 'cert_in')
-            $this->resultados = $this->recogidas_model->get_all_in();
+            $this->resultados = $this->recogidas_model->get_all_in($this->ano);
         elseif($this->pestanya == 'cert_out')
-            $this->resultados = $this->recogidas_model->get_all_out();    
+            $this->resultados = $this->recogidas_model->get_all_out($this->ano);    
     }
 
     private function nuevo_certificado() {
@@ -130,12 +156,10 @@ class recogidas_inforambiente extends fs_controller {
         // Primero chequeo variables y compruebo numero certificado
         if ($this->algun_error()) {
             return FALSE;
-        } elseif ($this->recogidas_model->existe_certificado($_POST['n_certificado'], $_POST['tipo_id'])) {
+        } elseif ($this->recogidas_model->existe_certificado($_POST['n_certificado'], $_POST['tipo_id'], $this->ano)) {
             $this->new_error_msg('Número de certificado no especificado o YA EXISTENTE...');
             return FALSE;
         } else {
-            $ano = date("Y");
-
             // ************************************************************************
             // ENTRADA
             // Creamos el PDF y escribimos sus metadatos de ENTRADA
@@ -144,7 +168,7 @@ class recogidas_inforambiente extends fs_controller {
             //*************************************************************************
             if ($_POST['tipo_id'] == 1) {
                 $almacen = $_POST['almacen'];
-                $this->filename = 'certificado_productor'.$almacen.$ano.$this->zerofill($_POST['n_certificado'], 6) . '.pdf';
+                $this->filename = 'certificado_productor'.$almacen.$this->ano.$this->zerofill($_POST['n_certificado'], 6) . '.pdf';
                 
                 $proveedor = new proveedor();
                 $proveedor_select = $proveedor->get($_POST['codproveedor']);
@@ -192,7 +216,7 @@ class recogidas_inforambiente extends fs_controller {
                         $pdf_doc->add_table_header(
                                 array(
                                     'titulo' => '<b>COMPROBANTE DE ENTREGA Nº:</b>',
-                                    'codigo' => '<b>TNP30360'.$almacen . $ano . $this->zerofill($_POST['n_certificado'], 6) . '</b>'
+                                    'codigo' => '<b>TNP30360'.$almacen . $this->ano . $this->zerofill($_POST['n_certificado'], 6) . '</b>'
                                 )
                         );
                         $pdf_doc->save_table(
@@ -554,7 +578,7 @@ class recogidas_inforambiente extends fs_controller {
                 // Creamos el PDF y escribimos sus metadatos de SALIDA 
                 //    
             } elseif ($_POST['tipo_id'] == 2) {
-                $this->filename = 'certificado_gestor' . $ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
+                $this->filename = 'certificado_gestor' . $this->ano . $this->zerofill($_POST['n_certificado'], 7) . '.pdf';
 
                 $pdf_doc = new fs_pdf();
                 $pdf_doc->pdf->selectFont('plugins/recogida_selectiva/extras/ezpdf/fonts/Times-Roman.afm');

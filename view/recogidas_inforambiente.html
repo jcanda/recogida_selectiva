@@ -109,7 +109,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <div class="form-group">
                     Almacen:
                     <select name="almacen" id="almacen" class="form-control" >
@@ -118,13 +118,13 @@
                     </select>
                 </div>
             </div>             
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <div class="form-group">
-                    Nº Certificado:
-                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_in()}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
+                    Nº Cert:
+                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_in($fsc->ano)}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
                 </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <div class="form-group">
                     Nº Autorización:
                     <select name="n_autorizacion" id="n_autorizacion" class="form-control" >
@@ -135,11 +135,18 @@
                     </select>
                 </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    Fecha Certificado:
+                    <input class="form-control datepicker" type="text" name="fecha" value="{$fsc->fecha}" id="fecha" placeholder="Si no indica defecto hoy" autocomplete="off"/>
+                </div>
+            </div>            
+            <div class="col-sm-2">
                 <div class="form-group">
                     Visualizar año:
-                    <select name="ano" id="ano" class="form-control" >
-                        <option value="2015">2015</option>
+                    <select name="ano" id="ano" class="form-control" onchange="this.form.submit();">
+                        <option value="{$fsc->ano}">{$fsc->ano}</option>
+                        <option value="2014">2014</option>
                     </select>
                 </div>
             </div>            
@@ -270,7 +277,7 @@
             <div class="col-sm-3">
                 <div class="form-group">
                     Nº Certificado:
-                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_out()}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
+                    <input class="form-control" type="text" name="n_certificado" value="{$fsc->recogidas_model->nextvalue_out($fsc->ano)}" id="n_certificado" placeholder="Numero certificado" autocomplete="off"/>
                 </div>
             </div>
             <div class="col-sm-3">
@@ -290,7 +297,7 @@
             <div class="col-sm-12">
                 <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled = true;
                         this.form.submit();">
-                    <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Generar Certificado Entrada
+                    <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Generar Certificado Salida
                 </button>
             </div>
         </div>

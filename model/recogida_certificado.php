@@ -167,19 +167,23 @@ class recogida_certificado extends fs_model
     {
         return $this->parse($this->db->select("SELECT * FROM {$this->table_name} ORDER BY n_certificado DESC;"), true);
     }
-    public function get_all_in()
+    public function get_all_in($ano='')
     {
+        $ano = $this->var2str($ano);
+                
         return $this->parse($this->db->select("SELECT {$this->table_name}.*, proveedores.nombre, dirproveedores.direccion FROM "
                 . "{$this->table_name} INNER JOIN proveedores ON proveedores.codproveedor = {$this->table_name}.empresa_id "
                 . " INNER JOIN dirproveedores ON  dirproveedores.id = {$this->table_name}.direccion_id "
-                . "WHERE {$this->table_name}.tipo_id = 1 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
+                . "WHERE {$this->table_name}.tipo_id = 1 AND YEAR(fecha) = $ano ORDER BY {$this->table_name}.n_certificado DESC;"), true);
     }
-    public function get_all_out()
+    public function get_all_out($ano='')
     {
+        $ano = $this->var2str($ano);
+        
         return $this->parse($this->db->select("SELECT {$this->table_name}.*, clientes.nombre, dirclientes.direccion FROM "
                 . "{$this->table_name} INNER JOIN clientes ON  clientes.codcliente = {$this->table_name}.empresa_id "
                 . " INNER JOIN dirclientes ON dirclientes.id = {$this->table_name}.direccion_id "
-                . "WHERE {$this->table_name}.tipo_id = 2 ORDER BY {$this->table_name}.n_certificado DESC;"), true);
+                . "WHERE {$this->table_name}.tipo_id = 2 AND YEAR(fecha) = $ano ORDER BY {$this->table_name}.n_certificado DESC;"), true);
         }    
     public function parse($items, $array = false)
     {
@@ -199,18 +203,20 @@ class recogida_certificado extends fs_model
         return null;
     }
     
-    public function nextvalue_in(){
-
-        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 1;");
+    public function nextvalue_in($ano=''){
+        $ano = $this->var2str($ano);
+        
+        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 1 AND YEAR(fecha)= $ano;");
         
         if ($data)
             return ($data[0]['id'])+1;
         else
             return FALSE;
    }    
-    public function nextvalue_out(){
-
-        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 2;");
+    public function nextvalue_out($ano=''){
+        $ano = $this->var2str($ano);
+        
+        $data = $this->db->select("SELECT MAX(n_certificado) AS id FROM {$this->table_name} WHERE tipo_id = 2 AND YEAR(fecha)= $ano;");
         
         if ($data)
             return ($data[0]['id'])+1;
@@ -222,14 +228,15 @@ class recogida_certificado extends fs_model
      * Esta función devuelve TRUE si los datos del objeto se encuentran
      * en la base de datos.
      */
-    public function existe_certificado($ncertificado = 0, $tipo = 0)
+    public function existe_certificado($ncertificado = 0, $tipo = 0, $ano = 0)
     {
         
         if($ncertificado != 0 AND $tipo != 0)
         {
             $value = $this->var2str($ncertificado);
             $tipo_id = $this->var2str($tipo);
-            return $this->db->select("SELECT id FROM {$this->table_name} WHERE n_certificado = $value AND tipo_id = $tipo_id;");
+            $ano = $this->var2str($ano);
+            return $this->db->select("SELECT id FROM {$this->table_name} WHERE n_certificado = $value AND tipo_id = $tipo_id AND YEAR(fecha) = $ano;");
         }
         
         return false;
