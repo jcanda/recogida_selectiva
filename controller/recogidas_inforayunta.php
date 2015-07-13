@@ -11,6 +11,7 @@
  *
  * @author Zapasoft
  */
+require_once 'plugins/recogida_selectiva/extras/fs_pdf.php';
 require_model('recogida_diario.php');
 
 class recogidas_inforayunta extends fs_controller {
@@ -29,14 +30,196 @@ class recogidas_inforayunta extends fs_controller {
      * a efectos prácticos, este es el constructor
      */
     protected function process() {
-        /// desactivamos la barra de botones
-        $this->show_fs_toolbar = FALSE;
         $this->desde = Date('1-m-Y');
         $this->hasta = Date('d-m-Y', mktime(0, 0, 0, date("m") + 1, date("1") - 1, date("Y")));
         $this->recogidas_model = new recogida_diario();
-    
         
+        if (isset($_POST['listado'])) {
+            if ($_POST['listado'] == 'recogidas_filtro') {
+                if ($_POST['generar'] == 'pdf') {
+                    $this->pdf_recogidas_filtro();
+                } else
+                    $this->csv_recogidas_filtro();
+            }
+            else {
+                if ($_POST['generar'] == 'pdf') {
+                    $this->pdf_recogidas_listado();
+                } else
+                    $this->csv_recogidas_listado();
+            }
+        }
     }
+    
+    private function pdf_recogidas_listado() {
+        /// desactivamos el motor de plantillas
+        $this->template = FALSE;
+
+        $pdf_doc = new fs_pdf('a4', 'landscape', 'Courier');
+        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayuntamiento emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayuntamiento emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+
+        $lineas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], 'todos', $_POST['orden']);
+
+        if ($lineas) {
+            $lineasrecogidas = count($lineas);
+            $linea_actual = 0;
+            $lppag = 33; /// líneas por página
+            $pagina = 1;
+
+            // Imprimimos las páginas necesarias
+            while ($linea_actual < $lineasrecogidas) {
+                /// salto de página
+                if ($linea_actual > 0) {
+                    $pdf_doc->pdf->ezNewPage();
+                    $pdf_doc->pdf->ezText("\n", 10);
+                    $pagina++;
+                }
+                /* ***************************************************************************************************************************************
+                 * Creamos la cabecera de la página, en este caso para el modelo simple para plantilla
+                 * 
+                 * ********************************************************************************************************************************************* */
+                //añado lineas en coordenadas exactas
+                $pdf_doc->pdf->ezText('Recogidas Ayuntamientos emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'], 14, array('aleft' => 170));
+                $pdf_doc->pdf->ezText("\n", 6);
+
+                /* ****************************************************************************************************************************************
+                 * Creamos la tabla con las lineas del certificado :
+                 * 
+                 * Fecha    LER  Codigo_Operacion   Descripcion    Obserbaciones Cantidad
+                 * ********************************************************************************************************************************************* */
+                $pdf_doc->new_table();
+                $pdf_doc->add_table_header(
+                        array(
+                            'fecha' => 'Fecha',
+                            'empresa' => 'Empresa',
+                            'material' => 'Material',
+                            'entrada' => 'Entrada',
+                            'salida' => 'Salida',
+                            'tipo' => 'Tipo',
+                            'matricula' => 'Matricula',
+                            'ayuntamiento' => 'Ayuntamiento',
+                            'ecovidrio' => 'Ecovidrio',
+                            'notas' => 'Nota'
+                        )
+                );
+
+                $saltos = 0;
+                for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) AND ( $linea_actual < $lineasrecogidas));) {
+                    $fila = array(
+                        'fecha' => date("d/m/Y", strtotime($lineas[$linea_actual]->fecha)),
+                        'empresa' => $lineas[$linea_actual]->nombre_empresa(),
+                        'material' => $lineas[$linea_actual]->nombre_material(),
+                        'entrada' => $this->show_numero($lineas[$linea_actual]->entrada, 2),
+                        'cantidad' => $this->show_numero($lineas[$linea_actual]->salida, 2),
+                        'tipo' => $lineas[$linea_actual]->nombre_tipo(),
+                        'matricula' => $lineas[$linea_actual]->matricula,
+                        'ayuntamiento' => $lineas[$linea_actual]->nombre_ayunta(),
+                        'ecovidrio' => $lineas[$linea_actual]->ecovidrio,
+                        'notas' => $this->fix_html($lineas[$linea_actual]->notas)
+                    );
+
+                    $pdf_doc->add_table_row($fila);
+                    $saltos++;
+                    $linea_actual++;
+                }
+                $pdf_doc->save_table(
+                        array(
+                            'fontSize' => 9,
+                            'cols' => array(
+                                'fecha' => array('justification' => 'center', 'width' => 70),
+                                'empresa' => array('justification' => 'center', 'width' => 80),
+                                'material' => array('justification' => 'center', 'width' => 70),
+                                'entrada' => array('justification' => 'right', 'width' => 60),
+                                'salida' => array('justification' => 'right', 'width' => 60),
+                                'tipo' => array('justification' => 'center', 'width' => 100),
+                                'matricula' => array('justification' => 'center', 'width' => 60),
+                                'ayuntamiento' => array('justification' => 'center', 'width' => 80),
+                                'ecovidrio' => array('justification' => 'center', 'width' => 60),
+                                'notas' => array('justification' => 'left')
+                            ),
+                            'alignHeadings' => 'center',
+                            'width' => 780,
+                            'shaded' => 1,
+                            'showLines' => 1,
+                            'xOrientation' => 'center'
+                        )
+                );
+                
+                $pdf_doc->pdf->ezSetY(60);
+                
+                /* *****************************************************************************************************************************************                        
+                 * 
+                 * Creamos el bloque de FOOTER
+                 * 
+                 * ************************************************************************************ */
+                $pdf_doc->new_table();
+                $pdf_doc->add_table_row(
+                        array(
+                            'pagina' => 'Pag: '.$pagina . '/' . ceil(count($lineas) / $lppag),
+                            'texto' => 'Email: '.$this->empresa->email.' | Tlf: '.$this->empresa->telefono
+                        )
+                );
+                $pdf_doc->save_table(
+                        array(
+                            'fontSize' => 8,
+                            'cols' => array(
+                                'pagina' => array('justification' => 'left'),
+                                'texto' => array('justification' => 'right')
+                            ),
+                            'shaded' => 0,
+                            'width' => 780,
+                            'showLines' => 4,
+                            'xOrientation' => 'center'
+                        )
+                );
+            }
+
+            $pdf_doc->show();
+        }
+    }
+
+    private function csv_recogidas_listado() {
+        /// desactivamos el motor de plantillas
+        $this->template = FALSE;
+
+        header("content-type:application/csv;charset=ISO-8859-1");
+        header("Content-Disposition: attachment; filename=\"recogidas_ayunt.csv\"");
+        echo "Fecha;Empresa;Material;Entrada;Salida;Tipo;Matricula;Ayuntamiento;Ecovidrio;Notas\n";
+        
+        $recogidas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], 'todos', $_POST['orden']);        
+        if($recogidas){
+            foreach($recogidas as $recog)
+            {
+                if($recog->ecovidrio == '1') $ecovidrio_='SI'; else $ecovidrio_='NO';
+                
+                $linea = array(
+                    'fecha' => $recog->fecha,
+                    'empresa' => $recog->nombre_empresa(),
+                    'material' => utf8_decode($recog->nombre_material()),
+                    'entrada' => str_replace('.', ',', $recog->entrada),
+                    'salida' => str_replace('.', ',', $recog->salida),
+                    'tipo' => utf8_decode($recog->nombre_tipo()),
+                    'matricula' => $recog->matricula,
+                    'ayuntamiento' => utf8_decode($recog->nombre_ayunta()),
+                    'ecovidrio' =>  $ecovidrio_,
+                    'notas' => utf8_decode($recog->notas)
+                );                
+            
+                echo '"'.join('";"', $linea)."\"\n";
+            }            
+            
+        }
+    }
+    
+    private function fix_html($txt)
+    {    
+      $newt = str_replace('&lt;', '<', $txt);
+      $newt = str_replace('&gt;', '>', $newt);
+      $newt = str_replace('&quot;', '"', $newt);
+      $newt = str_replace('&#39;', "'", $newt);
+      return $newt;
+    }    
 
     public function stats_materiales_month($material = '0') {
       $stats = array();

@@ -219,7 +219,7 @@ class recogida_diario extends fs_model
       $materiales = $this->materiales();
       return $materiales[$this->material_id];
    }   
-   public function search($buscar='', $material='todos',$orden="fecha")
+   public function search($buscar='', $desde='', $hasta='', $material='todos',$orden="fecha")
    {
       $entidadlist = array();
       
@@ -232,6 +232,16 @@ class recogida_diario extends fs_model
          $sql .= " AND ((upper(matricula) LIKE upper('%".$buscar."%')) OR (notas LIKE '%".$buscar."%')
             OR (lower(fecha) LIKE lower('%".$buscar."%')))";
       }
+      
+      if($desde != '')
+      {
+         $sql .= " AND `fecha` >= ".$this->var2str($desde);
+      }
+      
+      if($hasta != '')
+      {
+         $sql .= " AND `fecha` <= ".$this->var2str($hasta);
+      }       
       
       if($material != "todos" AND $material != "1")
       {

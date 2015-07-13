@@ -40,6 +40,8 @@ class recogidas_diario extends fs_controller
       $this->busqueda = array(
           'contenido' => '',
           'material' => '',
+          'desde' => '',
+          'hasta' => '',          
           'orden' => 'fecha'
       );
       /// ¿El usuario tiene permiso para eliminar en esta página?
@@ -83,15 +85,12 @@ class recogidas_diario extends fs_controller
         }
         //Para BUSCAR entidad O FILTRAR
         else if (isset($_POST['filtro_tipo']) || isset($_POST['buscar'])){
+            $this->busqueda['contenido'] = $_POST['buscar'];
+            $this->busqueda['material'] = $_POST['filtro_material'];
+            $this->busqueda['desde'] = $_POST['desde'];
+            $this->busqueda['hasta'] = $_POST['hasta'];
             
-             if (isset($_POST['buscar'])) {
-               $this->busqueda['contenido'] = $_POST['buscar'];
-             }
-             if (isset($_POST['filtro_material'])) {
-               $this->busqueda['material'] = $_POST['filtro_material'];
-             }             
-            
-            $this->resultado = $this->recogidas_model->search($this->busqueda['contenido'], $this->busqueda['material']);
+            $this->resultado = $this->recogidas_model->search($this->busqueda['contenido'], $this->busqueda['desde'], $this->busqueda['hasta'], $this->busqueda['material']);
         }
         // sino enseña listado con todas 
         else {
