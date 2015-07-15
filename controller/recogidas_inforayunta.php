@@ -55,10 +55,11 @@ class recogidas_inforayunta extends fs_controller {
         $this->template = FALSE;
 
         $pdf_doc = new fs_pdf('a4', 'landscape', 'Courier');
-        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayuntamiento emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
-        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayuntamiento emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayuntamiento del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayuntamiento del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
         $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
-
+        
+        //Aqui puedo hacer un bucle para buscar cada material en pagina completa
         $lineas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], 'todos', $_POST['orden']);
 
         if ($lineas) {
@@ -80,7 +81,7 @@ class recogidas_inforayunta extends fs_controller {
                  * 
                  * ********************************************************************************************************************************************* */
                 //añado lineas en coordenadas exactas
-                $pdf_doc->pdf->ezText('Recogidas Ayuntamientos emitidas del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'], 14, array('aleft' => 170));
+                $pdf_doc->pdf->ezText('Recogidas Ayuntamientos del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'], 14, array('aleft' => 170));
                 $pdf_doc->pdf->ezText("\n", 6);
 
                 /* ****************************************************************************************************************************************

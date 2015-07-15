@@ -18,7 +18,9 @@ class recogida_diario extends fs_model
    public $matricula;
    public $ayunta_id;
    public $ecovidrio;
-   public $notas;    
+   public $notas;
+   //Variables para recoger los nombres de la s entidades
+   public $entidad_nombre;
 
    public function __construct($a = FALSE) {
        
@@ -40,6 +42,8 @@ class recogida_diario extends fs_model
             $this->ayunta_id = intval($a['ayunta_id']);
             $this->ecovidrio = $this->str2bool($a['ecovidrio']);
             $this->notas = $this->no_html($a['notas']);
+            
+            $this->entidad_nombre = $this->no_html($a['entidad_nombre']);
         }else{
             $this->recogida_id = 0;
             $this->fecha = date('d-m-Y');
@@ -52,6 +56,8 @@ class recogida_diario extends fs_model
             $this->ayunta_id = 0;
             $this->ecovidrio = 0;
             $this->notas = '';
+            
+            $this->entidad_nombre = '';
         }
     }
 
@@ -128,7 +134,9 @@ class recogida_diario extends fs_model
    public function all($offset=0, $limit=FS_ITEM_LIMIT) {
         $recogidas = array();
         
-        $sql = "SELECT * FROM recogida_diario WHERE 1 ORDER BY recogida_id DESC";
+        $sql = "SELECT {$this->table_name}.*, recogida_entidad.entidad_nombre"
+        . " FROM {$this->table_name} INNER JOIN recogida_entidad ON recogida_entidad.entidad_id = {$this->table_name}.entidad_id"
+        . " WHERE 1 ORDER BY fecha DESC";
         
         $data = $this->db->select_limit($sql, $limit, $offset);
         
@@ -223,14 +231,14 @@ class recogida_diario extends fs_model
    {
       $entidadlist = array();
       
-      $sql = "SELECT *
-         FROM `recogida_diario`
+      $sql = "SELECT {$this->table_name}.*, recogida_entidad.entidad_nombre
+         FROM {$this->table_name} INNER JOIN recogida_entidad ON recogida_entidad.entidad_id = {$this->table_name}.entidad_id
          WHERE recogida_id > 0";
       
       if($buscar != '')
       {
          $sql .= " AND ((upper(matricula) LIKE upper('%".$buscar."%')) OR (notas LIKE '%".$buscar."%')
-            OR (lower(fecha) LIKE lower('%".$buscar."%')))";
+            OR (upper(entidad_nombre) LIKE upper('%".$buscar."%')))";
       }
       
       if($desde != '')
@@ -255,6 +263,9 @@ class recogida_diario extends fs_model
           }
           //si no entra en ninguno de los 2 if anteriores muestra todos las entidades.
       }
+      
+      
+      
       $sql.= " ORDER BY ".$orden." ASC ";
       
       $data = $this->db->select($sql.";");

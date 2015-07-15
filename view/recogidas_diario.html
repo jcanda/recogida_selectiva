@@ -64,7 +64,6 @@
    <table class="table table-hover" id="myTable">
       <thead>
          <tr>
-            <th class="text-left"><a href="#">N Recogida</a></th>
             <th class="text-left">Fecha</th>
             <th class="text-left">Empresa</th>
             <th class="text-left">Material</th>
@@ -81,9 +80,8 @@
       <!--{$total_salida=0}-->      
       {loop="$fsc->resultado"}
       <tr class="clickableRow{if condition="$value->material_id==1"} bg-success {elseif condition="$value->material_id==2"} bg-danger {/if}" href="{$value->url()}">
-         <td><b>{$value->recogida_id}</b></td>
          <td>{$value->fecha}</td>
-         <td>{$value->nombre_empresa()}</td>
+         <td>{$value->entidad_nombre}</td>
          <td>{$value->nombre_material()}</td>
          <td>{$fsc->show_numero($value->entrada)}</td>
          <td>{$fsc->show_numero($value->salida)}</td>
@@ -108,7 +106,7 @@
       {/loop}
       {if="$fsc->offset==0"}
       <tr>
-         <td colspan="4"></td>
+         <td colspan="3"></td>
          <td class="text-left"><b>{$fsc->show_numero($total_entrada)}</b></td>
          <td class="text-left"><b>{$fsc->show_numero($total_salida)}</b></td>
          <td colspan="5"></td>
