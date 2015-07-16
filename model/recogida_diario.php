@@ -227,7 +227,7 @@ class recogida_diario extends fs_model
       $materiales = $this->materiales();
       return $materiales[$this->material_id];
    }   
-   public function search($buscar='', $desde='', $hasta='', $material='todos',$orden="fecha")
+   public function search($buscar='', $desde='', $hasta='', $material='',$orden="fecha")
    {
       $entidadlist = array();
       
@@ -251,20 +251,10 @@ class recogida_diario extends fs_model
          $sql .= " AND `fecha` <= ".$this->var2str($hasta);
       }       
       
-      if($material != "todos" AND $material != "1")
+      if($material != '')
       {
          $sql .= " AND material_id = ".$material;
       }
-      else 
-      {
-          if($material == "1")
-          {
-              $sql .= " AND material_id = ".$material;
-          }
-          //si no entra en ninguno de los 2 if anteriores muestra todos las entidades.
-      }
-      
-      
       
       $sql.= " ORDER BY ".$orden." ASC ";
       

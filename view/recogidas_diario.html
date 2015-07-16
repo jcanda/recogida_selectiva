@@ -44,7 +44,7 @@
             </div>              
             <div class="form-group">
                 <select name="filtro_material" class="form-control" onchange="this.form.submit();">
-                    <option value="todos"{if="$fsc->busqueda['material']=='0'"} selected{/if}>Todos</option>
+                    <option value=""{if="$fsc->busqueda['material']=='0'"} selected{/if}>Todos</option>
                     {loop="fsc->listar_materiales()"}
                     <option value="{$value['material_id']}" {if="$fsc->busqueda['material']==$value['material_id']"} selected{/if}>{$value['nombre_material']}</option>
                     {/loop}
