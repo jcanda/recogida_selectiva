@@ -338,8 +338,105 @@
     {/if}
 </form>
 {elseif="$fsc->pestanya=='just'"}
-<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
-    Justificantes
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#ac_proveedor").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_proveedor',
+            onSelect: function (suggestion) {
+                if (suggestion)
+                {
+                    if (document.f_inforambiente.codproveedor.value != suggestion.data)
+                    {
+                        document.f_inforambiente.codproveedor.value = suggestion.data;
+                        
+                        $('#direccion_id option[value!="0"]').remove();
+                        
+                        selectValues = $.parseJSON(suggestion.direcciones);
+                        $.each(selectValues, function (key, value) {
+                            $("#direccion_id")
+                                .append($("<option></option>")
+                                .attr("value", value.id)
+                                .text(value.direccion));
+                        });
+                        
+                        document.f_inforambiente.direccion_id.focus();
+                    }
+                }
+            }
+        });
+        document.f_inforambiente.ac_proveedor.focus();
+        
+        $("#myTable").tablesorter({
+            widgets        : ['zebra', 'columns'],
+            usNumberFormat : false,
+            sortReset      : true,
+            sortRestart    : true
+        });        
+    });
+
+</script>
+
+<div class="container-fluid" style="margin-top: 15px;">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <form name="f_inforambiente" action="{$fsc->url()}&tab=just" method="post" target="_blank" class="form">
+                <input type="hidden" name="codproveedor" value="{$fsc->codproveedor}"/>
+                <input type="hidden" name="tipo_id" value="1"/>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Documentos de Aceptación de Residuos: Entrada</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-6">
+                            Empresa:
+                            <div class="input-group">
+                                <input class="form-control" type="text" name="ac_proveedor" value="" id="ac_proveedor" placeholder="Selecciona empresa" autocomplete="off"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" onclick="document.f_inforambiente.ac_proveedor.value = '';
+                                    document.f_inforambiente.ac_proveedor.focus();
+                                    document.f_inforambiente.codproveedor.value = '';
+                                    document.f_inforambiente.id_direccion.option[value != '0'].remove();">
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                </span> 
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            Dirección:
+                            <select name="direccion_id" id="direccion_id" class="form-control" >
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            Residuos:
+                            <select name="residuos" class="form-control">
+
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Almacén:
+                            <select name="almacen" class="form-control">
+                                <option value="poio">POIO</option>
+                                <option value="campino">CAMPIÑO</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Generar:
+                            <select name="generar" class="form-control">
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>    
+
+    </div>
 </div>
 {/if}
 

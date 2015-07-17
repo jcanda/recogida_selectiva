@@ -1,6 +1,4 @@
 {include="header"}
-<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.min.js"></script>
-<script src="plugins/recogida_selectiva/view/js/jquery.tablesorter.widgets.min.js"></script>
 
 <ul class="nav nav-tabs">
     <li role="presentation"{if="$fsc->pestanya=='graf'"} class="active"{/if}>
@@ -18,12 +16,173 @@
 </ul>
 
 {if="$fsc->pestanya=='graf'"}
-<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
+<div class="container-fluid" style="margin-top: 15px;">
     Graficos
 </div>
 {elseif="$fsc->pestanya=='list'"}
-<div class="container-fluid" style="margin-top: 10px; margin-bottom: 20px;">
-    Listados
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#ac_proveedor").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_proveedor',
+            onSelect: function (suggestion) {
+                if (suggestion)
+                {
+                    if (document.f_inforambiente.codproveedor.value != suggestion.data)
+                    {
+                        document.f_inforambiente.codproveedor.value = suggestion.data;
+                        
+                        $('#direccion_id option[value!="0"]').remove();
+                        
+                        selectValues = $.parseJSON(suggestion.direcciones);
+                        $.each(selectValues, function (key, value) {
+                            $("#direccion_id")
+                                .append($("<option></option>")
+                                .attr("value", value.id)
+                                .text(value.direccion));
+                        });
+                        
+                        document.f_inforambiente.direccion_id.focus();
+                    }
+                }
+            }
+        });
+        
+        $("#ac_cliente").autocomplete({
+            serviceUrl: '{$fsc->url()}',
+            paramName: 'buscar_cliente',
+            onSelect: function (suggestion) {
+                if (suggestion)
+                {
+                    if (document.f_inforambiente_out.codcliente.value != suggestion.data)
+                    {
+                        document.f_inforambiente_out.codcliente.value = suggestion.data;
+                        
+                        $('#direccion_id_cliente option[value!="0"]').remove();
+                        
+                        selectValues = $.parseJSON(suggestion.direcciones);
+                        $.each(selectValues, function (key, value) {
+                            $("#direccion_id_cliente")
+                                .append($("<option></option>")
+                                .attr("value", value.id)
+                                .text(value.direccion));
+                        });
+                        
+                        document.f_inforambiente_out.direccion_id_cliente.focus();
+                    }
+                }
+            }
+        });
+        
+        document.f_inforambiente.ac_proveedor.focus();      
+    });
+</script>
+
+<div class="container-fluid" style="margin-top: 15px;">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <form name="f_inforambiente" action="{$fsc->url()}" method="post" target="_blank" class="form">
+                <input type="hidden" name="codproveedor" value="{$fsc->codproveedor}"/>
+                <input type="hidden" name="tipo_id" value="1"/>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas Empresas - Entradas</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-6">
+                            Empresa:
+                            <div class="input-group">
+                                <input class="form-control" type="text" name="ac_proveedor" value="" id="ac_proveedor" placeholder="Selecciona empresa" autocomplete="off"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" onclick="document.f_inforambiente.ac_proveedor.value = '';
+                                    document.f_inforambiente.ac_proveedor.focus();
+                                    document.f_inforambiente.codproveedor.value = '';
+                                    document.f_inforambiente.id_direccion.option[value != '0'].remove();">
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                </span> 
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            Dirección:
+                            <select name="direccion_id" id="direccion_id" class="form-control" >
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Desde:
+                            <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Hasta:
+                            <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Generar:
+                            <select name="generar" class="form-control">
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <form name="f_inforambiente_out" action="{$fsc->url()}" method="post" target="_blank" class="form">
+                <input type="hidden" name="codcliente" value="{$fsc->codcliente}"/>
+                <input type="hidden" name="tipo_id" value="2"/>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas Empresas - Salidas</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-6">
+                            Empresa:
+                            <div class="input-group">
+                                <input class="form-control" type="text" name="ac_cliente" value="" id="ac_cliente" placeholder="Selecciona empresa" autocomplete="off"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" onclick="document.f_inforambiente_out.ac_cliente.value = '';
+                                    document.f_inforambiente_out.ac_cliente.focus();
+                                    document.f_inforambiente_out.codcliente.value = '';document.f_inforambiente_out.id_direccion.option[value!='0'].remove();">
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                </span> 
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            Dirección:
+                            <select name="direccion_id_cliente" id="direccion_id_cliente" class="form-control" >
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Desde:
+                            <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Hasta:
+                            <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Generar:
+                            <select name="generar" class="form-control">
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>    
+    </div>
 </div>
 {/if}
 

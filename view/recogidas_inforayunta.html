@@ -1,5 +1,21 @@
 {include="header"}
 
+<ul class="nav nav-tabs">
+    <li role="presentation"{if="$fsc->pestanya=='graf'"} class="active"{/if}>
+        <a href="{$fsc->url()}&tab=graf">
+            <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>  
+            <span class="hidden-xs">&nbsp; Gráficos</span>
+        </a>
+    </li>   
+    <li role="presentation"{if="$fsc->pestanya=='list'"} class="active"{/if}>
+        <a href="{$fsc->url()}&tab=list">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>         
+            <span class="hidden-xs">&nbsp; Listados</span>
+        </a>
+    </li>    
+</ul>
+
+{if="$fsc->pestanya=='graf'"}
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript">
    // Load the Visualization API and the piechart package.
@@ -89,163 +105,152 @@
     }
 </script>
 
-<!-- Nav tabs -->
-<ul class="nav nav-tabs" role="tablist">
-   <li class="active"><a href="#home" role="tab" data-toggle="tab">Gráficos</a></li>
-   <li><a href="#listados" role="tab" data-toggle="tab">Listados</a></li>
-</ul>
+<div class="container-fluid" style="margin-top: 15px;">
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recogidas Materiales de los últimos meses - AYUNTAMIENTOS</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="chart_recogidas_materiales"></div>
+                </div>
+            </div>
+        </div>
+    </div> 
 
-<!-- Tab panes -->
-<div class="tab-content">
-   <div class="tab-pane active" id="home">
-       <div class="container-fluid" style="margin-top: 15px;">
-          <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-               <div class="panel panel-default">
-                  <div class="panel-heading">
-                     <h3 class="panel-title">Recogidas Materiales de los últimos meses - AYUNTAMIENTOS</h3>
-                  </div>
-                  <div class="panel-body">
-                     <div id="chart_recogidas_materiales"></div>
-                  </div>
-               </div>
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recogidas Vidrio - AYUNTAMIENTOS</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="chart_vidrio_month"></div>
+                </div>
             </div>
-          </div> 
-           
-         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-               <div class="panel panel-default">
-                  <div class="panel-heading">
-                     <h3 class="panel-title">Recogidas Vidrio - AYUNTAMIENTOS</h3>
-                  </div>
-                  <div class="panel-body">
-                     <div id="chart_vidrio_month"></div>
-                  </div>
-               </div>
-            </div>
-         </div>           
-           
-         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-               <div class="panel panel-default">
-                  <div class="panel-heading">
-                     <h3 class="panel-title">Recogidas Carton - AYUNTAMIENTOS</h3>
-                  </div>
-                  <div class="panel-body">
-                     <div id="chart_carton_month"></div>
-                  </div>
-               </div>
-            </div>
-         </div>           
-           
-         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-               <div class="panel panel-default">
-                  <div class="panel-heading">
-                     <h3 class="panel-title">Recogidas Chapa - AYUNTAMIENTOS</h3>
-                  </div>
-                  <div class="panel-body">
-                     <div id="chart_chapa_month"></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-           
-       </div>
-   </div>
+        </div>
+    </div>           
 
-    <div class="tab-pane" id="listados">
-      <div class="container-fluid" style="margin-top: 15px;">
-          <div class="row">
-            <div class="col-lg-6 col-md-6 col-sm-6">
-               <form action="{$fsc->url()}" method="post" target="_blank" class="form">
-                  <input type="hidden" name="listado" value="recogidas_filtro"/>
-                  <div class="panel panel-info">
-                     <div class="panel-heading">
-                        <h3 class="panel-title">Recogidas por Filtros Agrupados</h3>
-                     </div>
-                     <div class="panel-body">
-                        <div class="form-group col-md-3">
-                           Desde:
-                           <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}"/>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Hasta:
-                           <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}"/>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Filtro:
-                           <select class="form-control" name="filtro">
-                              <option value="CESPA">CESPA</option>
-                              <option value="ecovidrio">Ecovidrio</option>
-                              <option value="LUIS RIVAS">LUIS RIVAS</option>
-                              <option value="entidad">Empresa</option>
-                              <option value="material">Material</option>
-                           </select>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Generar:
-                           <select name="generar" class="form-control">
-                              <option value="pdf">PDF</option>
-                           </select>
-                        </div>
-                     </div>
-                     <div class="panel-footer">
-                        <button class="btn btn-sm btn-primary" type="submit">
-                           <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
-                        </button>
-                     </div>
-                  </div>
-               </form>
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recogidas Carton - AYUNTAMIENTOS</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="chart_carton_month"></div>
+                </div>
             </div>
-              
-            <div class="col-lg-6 col-md-6 col-sm-6">
-               <form action="{$fsc->url()}" method="post" target="_blank" class="form">
-                  <input type="hidden" name="listado" value="recogidas_listado"/>
-                  <div class="panel panel-info">
-                     <div class="panel-heading">
-                        <h3 class="panel-title">Recogidas Listado</h3>
-                     </div>
-                     <div class="panel-body">
-                        <div class="form-group col-md-3">
-                           Desde:
-                           <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}" size="12"/>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Hasta:
-                           <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}" size="12"/>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Orden:
-                           <select class="form-control" name="orden">
-                              <option value="fecha">Fecha</option>
-                              <option value="entidad_id">Empresa</option>
-                              <option value="material_id">Material</option>
-                              <option value="matricula">Matricula</option>
-                           </select>
-                        </div>
-                        <div class="form-group col-md-3">
-                           Generar:
-                           <select name="generar" class="form-control">
-                              <option value="pdf">PDF</option>
-                              <option value="csv">CSV</option>
-                           </select>
-                        </div>
-                     </div>
-                     <div class="panel-footer">
-                        <button class="btn btn-sm btn-primary" type="submit">
-                           <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
-                        </button>
-                     </div>
-                  </div>
-               </form>
+        </div>
+    </div>           
+
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recogidas Chapa - AYUNTAMIENTOS</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="chart_chapa_month"></div>
+                </div>
             </div>
-              
-          </div>
-      </div>
+        </div>
     </div>
-    
+
 </div>
+
+{elseif="$fsc->pestanya=='list'"}
+
+<div class="container-fluid" style="margin-top: 15px;">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <form action="{$fsc->url()}" method="post" target="_blank" class="form">
+                <input type="hidden" name="listado" value="recogidas_filtro"/>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas Ayunt Filtros Agrupados</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-md-3">
+                            Desde:
+                            <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Hasta:
+                            <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Filtro:
+                            <select class="form-control" name="filtro">
+                                <option value="CESPA">CESPA</option>
+                                <option value="LUIS RIVAS">LUIS RIVAS</option>
+                                <option value="Ecovidrio">Ecovidrio</option>
+                                <option value="empresas">Empresas</option>                              
+                                <option value="materiales">Materiales</option>
+                                <option value="ayuntamientos">Ayuntamientos</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Generar:
+                            <select name="generar" class="form-control">
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <form action="{$fsc->url()}" method="post" target="_blank" class="form">
+                <input type="hidden" name="listado" value="recogidas_listado"/>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Recogidas Ayunt. Listado</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-md-3">
+                            Desde:
+                            <input class="form-control datepicker" type="text" name="dfecha" value="{$fsc->desde}" size="12"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Hasta:
+                            <input class="form-control datepicker" type="text" name="hfecha" value="{$fsc->hasta}" size="12"/>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Orden:
+                            <select class="form-control" name="orden">
+                                <option value="fecha">Fecha</option>
+                                <option value="entidad_id">Empresa</option>
+                                <option value="material_id">Material</option>
+                                <option value="matricula">Matricula</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            Generar:
+                            <select name="generar" class="form-control">
+                                <option value="pdf">PDF</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <span class="glyphicon glyphicon-eye-open"></span> &nbsp; Descargar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{/if}
 
 {include="footer"}
 

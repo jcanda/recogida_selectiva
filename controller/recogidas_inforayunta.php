@@ -16,9 +16,11 @@ require_model('recogida_diario.php');
 
 class recogidas_inforayunta extends fs_controller {
 
+    public $pestanya;    
     public $desde;
     public $hasta;
     public $recogidas_model;
+    public $pdf_titulo;
 
     public function __construct() {
         parent::__construct(__CLASS__, 'Informes Ayuntamiento', 'recogida selectiva', FALSE, TRUE);
@@ -30,17 +32,30 @@ class recogidas_inforayunta extends fs_controller {
      * a efectos prácticos, este es el constructor
      */
     protected function process() {
+        //Pestaña inicial por defecto
+        $this->pestanya = 'list';
+        //capturo la pestaña si se especifica
+        if (isset($_GET['tab'])) {
+            $this->pestanya = $_GET['tab'];
+        }        
         $this->desde = Date('1-m-Y');
         $this->hasta = Date('d-m-Y', mktime(0, 0, 0, date("m") + 1, date("1") - 1, date("Y")));
         $this->recogidas_model = new recogida_diario();
-        
+                        
         if (isset($_POST['listado'])) {
             if ($_POST['listado'] == 'recogidas_filtro') {
                 if ($_POST['generar'] == 'pdf') {
-                    if ($_POST['filtro'] == 'ecovidrio')
+                    if ($_POST['filtro'] == 'Ecovidrio'){
                         $this->pdf_filtro_material(3);
-                    else
+                    }elseif($_POST['filtro'] == 'materiales'){
+                        $this->pdf_filtro_material();                       
+                    }elseif($_POST['filtro'] == 'ayuntamientos'){
+                        $this->pdf_filtro_ayunts();
+                    }elseif($_POST['filtro'] == 'empresas'){
+                        $this->pdf_filtro_empresa();                      
+                    }else{
                         $this->pdf_filtro_empresa($_POST['filtro']);
+                    }
                 } else
                     $this->csv_recogidas_filtro();
             }
@@ -53,214 +68,257 @@ class recogidas_inforayunta extends fs_controller {
         }
     }
     
-    private function pdf_filtro_empresa($empresa=''){
+    private function pdf_filtro_empresa($empresa = '', $material = '') {
         /// desactivamos el motor de plantillas
         $this->template = FALSE;
 
         $pdf_doc = new fs_pdf('a4', 'portrait', 'Courier');
-        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayunts '.$empresa.' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
-        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayunts'.$empresa.' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
-        $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);  
+        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayunts ' . $empresa . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayunts' . $empresa . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+
+        //consulta de empresas 
+        $empresas_all = $this->recogidas_model->search_empresa($empresa);
+        //consulta de materiales hay
+        if ($material != '')
+            $materiales = array($material);
+        else
+            $materiales = array(1, 2, 3);
         
-        //consulta para saber cuandos materiales hay para esta empresa en estas fechas
-        $materiales = array (1,2,3);
-        //Buble para crear documentos para cada material
-        foreach ($materiales as $mat){
-            $lineas = $this->recogidas_model->search($empresa, $_POST['dfecha'],$_POST['hfecha'], $mat);
-            
-            //Llamo a la funcion para generar el listado pasandole lineas 
-            $this->genera_pdf($lineas, $pdf_doc, FALSE);
+        // Bucle para cada Empresa si no se especifica una
+        foreach ($empresas_all as $empre) {
+            //Buble para crear documentos para cada material
+            foreach ($materiales as $mat) {
+                $lineas = $this->recogidas_model->search($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat);
+                if ($lineas) {
+                    $pap_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 2);
+                    $iglu_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 1);
+                    $this->pdf_titulo = 'Recogidas ' . $empre->entidad_nombre . ': ' . $this->recogidas_model->nombre_material($mat) . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'];
+                    //Llamo a la funcion para generar el listado pasandole lineas 
+                    $this->genera_pdf($lineas, $pdf_doc, FALSE);
+                }
+            }
         }
-        //$lineas = $this->recogidas_model->all(0,127);
-        
-        if($lineas){
-            //$pdf_doc->pdf->ezText(" entra en lineas \n", 10);
-            //$this->genera_pdf($lineas, $pdf_doc);
-            $pdf_doc->show();
-        }
+        $pdf_doc->show();
     }
+
+    private function pdf_filtro_material($material = '', $empresa = '') {
+        /// desactivamos el motor de plantillas
+        $this->template = FALSE;
+
+        $pdf_doc = new fs_pdf('a4', 'portrait', 'Courier');
+        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayunts ' . $_POST['filtro'] . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayunts' . $_POST['filtro'] . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+        
+        //consulta de materiales hay
+        if ($material != '')
+            $materiales = array($material);
+        else
+            $materiales = array(1, 2, 3);
+        //consulta de empresas 
+        $empresas_all = $this->recogidas_model->search_empresa($empresa);
+        
+        // Bucle para cada Material si no se especifica uno
+        foreach ($materiales as $mat) {
+            //Bucle para cada empresa dentro del Material
+            foreach ($empresas_all as $empre) {
+                $lineas = $this->recogidas_model->search($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat);
+                if ($lineas) {
+                    $pap_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 2);
+                    $iglu_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 1);
+                    $this->pdf_titulo = 'Recogidas ' . $this->recogidas_model->nombre_material($mat) . ': ' . $empre->entidad_nombre . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'];
+                    //Llamo a la funcion para generar el listado pasandole lineas 
+                    $this->genera_pdf($lineas, $pdf_doc, TRUE);
+                }
+            }
+        }
+        $pdf_doc->show();
+    }
+
+    private function pdf_filtro_ayunts($ayuntamiento='', $empresa='') {
+        /// desactivamos el motor de plantillas
+        $this->template = FALSE;
+
+        $pdf_doc = new fs_pdf('a4', 'portrait', 'Courier');
+        $pdf_doc->pdf->addInfo('Title', 'Recogidas Ayunts  del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Subject', 'Recogidas Ayunts del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']);
+        $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
+        
+        // Busco todos los ayuntamientos existentes -> Devuelve IDs
+        $ayunts_all = $this->recogidas_model->search_ayunta($ayuntamiento);
+        //consulta para saber cuandos materiales hay para esta empresa en estas fechas
+        $empresas_all = $this->recogidas_model->search_empresa($empresa);
+        //consulta para saber cuandos materiales hay
+        $materiales = array(1, 2, 3);
+
+        // Realizo bucle con cada ID de ayuntamiento encontrado
+        foreach ($ayunts_all as $ayunt) {
+            foreach ($empresas_all as $empre) {
+                foreach ($materiales as $mat) {
+                    $lineas = $this->recogidas_model->search($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, $ayunt->entidad_id);
+                    if ($lineas) {
+                        $this->pdf_titulo = 'Ayunto. '. $this->recogidas_model->nombre_ayunta($ayunt->entidad_id) . ': ' .$empre->entidad_nombre . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'];
+                         //Llamo a la funcion para generar el listado pasandole lineas 
+                        $this->genera_pdf($lineas, $pdf_doc, TRUE);
+                    }
+                }
+            }
+        }
+        $pdf_doc->show();
+    }    
+    
     /*******************************************************
      * 
      * Funcion que crea los pdf estandar
      * 
      *******************************************************
      *       */    
-    private function genera_pdf(&$lineas, &$pdf_doc, $salidas = TRUE){
+    private function genera_pdf(&$lineas, &$pdf_doc, $salidas = TRUE) {
 
-        if ($lineas) {
-            $lineasrecogidas = count($lineas);
-            $linea_actual = 0;
-            $lppag = 55; /// líneas por página
-            $pagina = 1;
-            $totalentra = 0;
-            $totalsal = 0;            
+        $lineasrecogidas = count($lineas);
+        $linea_actual = 0;
+        $lppag = 55; /// líneas por página
+        $pagina = 1;
+        $totalentra = 0;
+        $totalsal = 0;
 
-            // Imprimimos las páginas necesarias
-            while ($linea_actual < $lineasrecogidas) {
-                /// salto de página
-                if ($linea_actual > 0) {
-                    $pdf_doc->pdf->ezNewPage();
-                    $pdf_doc->pdf->ezText("\n", 8);
-                    $pagina++;
-                }
-                /* ***************************************************************************************************************************************
-                 * Creamos la cabecera de la página, en este caso para el modelo simple para plantilla
-                 * 
-                 * ********************************************************************************************************************************************* */
-                $pdf_doc->new_table();
-                $pdf_doc->add_table_header(
-                        array(
-                            'titulo' => 'Recogidas Ayunts '.$_POST['filtro'].' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha']
-                        )
+        // Imprimimos las páginas necesarias
+        while ($linea_actual < $lineasrecogidas) {
+            /// salto de página
+            if ($linea_actual > 0) {
+                $pdf_doc->pdf->ezNewPage();
+                $pdf_doc->pdf->ezText("\n", 8);
+                $pagina++;
+            }
+            /*             * **************************************************************************************************************************************
+             * Creamos la cabecera de la página, en este caso para el modelo simple para plantilla
+             * 
+             * ********************************************************************************************************************************************* */
+            $pdf_doc->new_table();
+            $pdf_doc->add_table_header(
+                    array(
+                        'titulo' => $this->pdf_titulo
+                    )
+            );
+            $pdf_doc->save_table(
+                    array(
+                        'fontSize' => 12,
+                        'cols' => array(
+                            'titulo' => array('justification' => 'center')
+                        ),
+                        'shaded' => 0,
+                        'width' => 540,
+                        'showLines' => 0,
+                        'xOrientation' => 'center'
+                    )
+            );
+            $pdf_doc->pdf->ezText("\n", 6);
+            /*             * ***************************************************************************************************************************************
+             * Creamos la tabla con las lineas del informe :
+             * 
+             * Fecha    ...
+             * ********************************************************************************************************************************************* */
+            if ($salidas)
+                $header = array(
+                    'fecha' => 'Fecha',
+                    'empresa' => 'Empresa',
+                    'material' => 'Material',
+                    'entrada' => 'Entrada',
+                    'salida' => 'Salida',
+                    'tipo' => 'Tipo',
+                    'matricula' => 'Matricula',
+                    'ayuntamiento' => 'Ayuntamiento',
+                    'notas' => 'Nota'
                 );
-                $pdf_doc->save_table(
-                        array(
-                            'fontSize' => 12,
-                            'cols' => array(
-                                'titulo' => array('justification' => 'center')
-                            ),
-                            'shaded' => 0,
-                            'width' => 540,
-                            'showLines' => 0,
-                            'xOrientation' => 'center'
-                        )
+            else
+                $header = array(
+                    'fecha' => 'Fecha',
+                    'empresa' => 'Empresa',
+                    'material' => 'Material',
+                    'entrada' => 'Entrada',
+                    'tipo' => 'Tipo',
+                    'matricula' => 'Matricula',
+                    'ayuntamiento' => 'Ayuntamiento',
+                    'notas' => 'Nota'
                 );
-                $pdf_doc->pdf->ezText("\n", 6);
-                /* ****************************************************************************************************************************************
-                 * Creamos la tabla con las lineas del informe :
-                 * 
-                 * Fecha    ...
-                 * ********************************************************************************************************************************************* */
-                if($salidas)
-                    $header = array(
-                            'fecha' => 'Fecha',
-                            'empresa' => 'Empresa',
-                            'material' => 'Material',
-                            'entrada' => 'Entrada',
-                            'salida' => 'Salida',
-                            'tipo' => 'Tipo',
-                            'matricula' => 'Matricula',
-                            'ayuntamiento' => 'Ayuntamiento',
-                            'notas' => 'Nota'
-                        );
+
+            $pdf_doc->new_table();
+            $pdf_doc->add_table_header($header);
+
+            $saltos = 0;
+            for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) AND ( $linea_actual < $lineasrecogidas));) {
+                $fila = array(
+                    'fecha' => date("d/m/Y", strtotime($lineas[$linea_actual]->fecha)),
+                    'empresa' => $lineas[$linea_actual]->entidad_nombre,
+                    'material' => $lineas[$linea_actual]->nombre_material(),
+                    'entrada' => $this->show_numero($lineas[$linea_actual]->entrada, 3),
+                    'salida' => $this->show_numero($lineas[$linea_actual]->salida, 3),
+                    'tipo' => $lineas[$linea_actual]->nombre_tipo(),
+                    'matricula' => $lineas[$linea_actual]->matricula,
+                    'ayuntamiento' => $lineas[$linea_actual]->nombre_ayunta(),
+                    'notas' => $this->fix_html($lineas[$linea_actual]->notas)
+                );
+
+                $pdf_doc->add_table_row($fila);
+                $totalentra = $totalentra + $lineas[$linea_actual]->entrada;
+                $totalsal = $totalsal + $lineas[$linea_actual]->salida;
+                $saltos++;
+                $linea_actual++;
+            }
+            $pdf_doc->save_table(
+                    array(
+                        'fontSize' => 8,
+                        'cols' => array(
+                            'fecha' => array('justification' => 'center', 'width' => 60),
+                            'empresa' => array('justification' => 'center', 'width' => 60),
+                            'material' => array('justification' => 'center', 'width' => 55),
+                            'entrada' => array('justification' => 'right', 'width' => 55),
+                            'salida' => array('justification' => 'right', 'width' => 55),
+                            'tipo' => array('justification' => 'center', 'width' => 85),
+                            'matricula' => array('justification' => 'center', 'width' => 55),
+                            'ayuntamiento' => array('justification' => 'center', 'width' => 70),
+                            'notas' => array('justification' => 'left')
+                        ),
+                        'alignHeadings' => 'center',
+                        'width' => 540,
+                        'shaded' => 1,
+                        'showLines' => 1,
+                        'xOrientation' => 'center'
+                    )
+            );
+            /*             * **************************************************
+             * 
+             * Si es la ultima pagina creamos la tabla de totales
+             * 
+             */
+            if ($linea_actual == count($lineas)) {
+                if (!$salidas)
+                    $header_totales = array(
+                        'col1' => '<b>Totales (' . $linea_actual . '):  </b>',
+                        'totalentra' => $this->show_numero($totalentra, 3),
+                        'totalsal' => '  ',
+                        'col2' => '  '
+                    );
                 else
-                    $header = array(
-                            'fecha' => 'Fecha',
-                            'empresa' => 'Empresa',
-                            'material' => 'Material',
-                            'entrada' => 'Entrada',
-                            'tipo' => 'Tipo',
-                            'matricula' => 'Matricula',
-                            'ayuntamiento' => 'Ayuntamiento',
-                            'notas' => 'Nota'
-                        );                    
-                
-                $pdf_doc->new_table();
-                $pdf_doc->add_table_header($header);
-
-                $saltos = 0;
-                for ($i = $linea_actual; (($linea_actual < ($lppag + $i)) AND ( $linea_actual < $lineasrecogidas));) {
-                    $fila = array(
-                        'fecha' => date("d/m/Y", strtotime($lineas[$linea_actual]->fecha)),
-                        'empresa' => $lineas[$linea_actual]->entidad_nombre,
-                        'material' => $lineas[$linea_actual]->nombre_material(),
-                        'entrada' => $this->show_numero($lineas[$linea_actual]->entrada, 3),
-                        'salida' => $this->show_numero($lineas[$linea_actual]->salida, 3),
-                        'tipo' => $lineas[$linea_actual]->nombre_tipo(),
-                        'matricula' => $lineas[$linea_actual]->matricula,
-                        'ayuntamiento' => $lineas[$linea_actual]->nombre_ayunta(),
-                        'notas' => $this->fix_html($lineas[$linea_actual]->notas)
+                    $header_totales = array(
+                        'col1' => '<b>Totales (' . $linea_actual . '):  </b>',
+                        'totalentra' => $this->show_numero($totalentra, 3),
+                        'totalsal' => $this->show_numero($totalsal, 3),
+                        'col2' => '         Diferencia: ' . $this->show_numero($totalentra - $totalsal, 3)
                     );
 
-                    $pdf_doc->add_table_row($fila);
-                    $totalentra = $totalentra + $lineas[$linea_actual]->entrada;
-                    $totalsal = $totalsal + $lineas[$linea_actual]->salida;                    
-                    $saltos++;
-                    $linea_actual++;
-                }
+
+                $pdf_doc->new_table();
+                $pdf_doc->add_table_header($header_totales);
                 $pdf_doc->save_table(
                         array(
                             'fontSize' => 8,
                             'cols' => array(
-                                'fecha' => array('justification' => 'center', 'width' => 60),
-                                'empresa' => array('justification' => 'center', 'width' => 60),
-                                'material' => array('justification' => 'center', 'width' => 55),
-                                'entrada' => array('justification' => 'right', 'width' => 55),
-                                'salida' => array('justification' => 'right', 'width' => 55),
-                                'tipo' => array('justification' => 'center', 'width' => 85),
-                                'matricula' => array('justification' => 'center', 'width' => 55),
-                                'ayuntamiento' => array('justification' => 'center', 'width' => 70),
-                                'notas' => array('justification' => 'left')
-                            ),
-                            'alignHeadings' => 'center',
-                            'width' => 540,
-                            'shaded' => 1,
-                            'showLines' => 1,
-                            'xOrientation' => 'center'
-                        )
-                );
-                /****************************************************
-                 * 
-                 * Si es la ultima pagina creamos la tabla de totales
-                 * 
-                 */ 
-                if ($linea_actual == count($lineas)) {
-                    if(!$salidas)
-                        $header_totales = array(
-                                'col1' => '<b>Totales ('.$linea_actual.'):  </b>',
-                                'totalentra' => $this->show_numero($totalentra,3),
-                                'totalsal' => '  ',
-                                'col2' => '  '
-                            );
-                    else
-                        $header_totales = array(
-                                'col1' => '<b>Totales ('.$linea_actual.'):  </b>',
-                                'totalentra' => $this->show_numero($totalentra,3),
-                                'totalsal' => $this->show_numero($totalsal,3),
-                                'col2' => '         Diferencia: '.$this->show_numero($totalentra-$totalsal,3)
-                            );
-                        
-                        
-                    $pdf_doc->new_table();
-                    $pdf_doc->add_table_header($header_totales);
-                    $pdf_doc->save_table(
-                            array(
-                                'fontSize' => 8,
-                                'cols' => array(
-                                    'col1' => array('justification' => 'right', 'width' => 170),
-                                    'totalentra' => array('justification' => 'right', 'width' => 60),
-                                    'totalsal' => array('justification' => 'right', 'width' => 55),
-                                    'col2' => array('justification' => 'left')                                   
-                                ),
-                                'shaded' => 0,
-                                'width' => 540,
-                                'showLines' => 4,
-                                'xOrientation' => 'center'
-                            )
-                    );
-                }
-                
-                // Saltamos el cursor en la pagina final para crear footer 
-                $pdf_doc->pdf->ezSetY(60);
-                
-                /* *****************************************************************************************************************************************                        
-                 * 
-                 * Creamos el bloque de FOOTER
-                 * 
-                 * ************************************************************************************ */
-                $pdf_doc->new_table();
-                $pdf_doc->add_table_row(
-                        array(
-                            'pagina' => 'Pag: '.$pagina . '/' . ceil(count($lineas) / $lppag),
-                            'texto' => 'Email: '.$this->empresa->email.' | Tlf: '.$this->empresa->telefono
-                        )
-                );
-                $pdf_doc->save_table(
-                        array(
-                            'fontSize' => 8,
-                            'cols' => array(
-                                'pagina' => array('justification' => 'left'),
-                                'texto' => array('justification' => 'right')
+                                'col1' => array('justification' => 'right', 'width' => 170),
+                                'totalentra' => array('justification' => 'right', 'width' => 60),
+                                'totalsal' => array('justification' => 'right', 'width' => 55),
+                                'col2' => array('justification' => 'left')
                             ),
                             'shaded' => 0,
                             'width' => 540,
@@ -270,8 +328,35 @@ class recogidas_inforayunta extends fs_controller {
                 );
             }
 
+            // Saltamos el cursor en la pagina final para crear footer 
+            $pdf_doc->pdf->ezSetY(60);
+
+            /*             * ****************************************************************************************************************************************                        
+             * 
+             * Creamos el bloque de FOOTER
+             * 
+             * ************************************************************************************ */
+            $pdf_doc->new_table();
+            $pdf_doc->add_table_row(
+                    array(
+                        'pagina' => 'Pag: ' . $pagina . '/' . ceil(count($lineas) / $lppag),
+                        'texto' => 'Email: ' . $this->empresa->email . ' | Tlf: ' . $this->empresa->telefono
+                    )
+            );
+            $pdf_doc->save_table(
+                    array(
+                        'fontSize' => 8,
+                        'cols' => array(
+                            'pagina' => array('justification' => 'left'),
+                            'texto' => array('justification' => 'right')
+                        ),
+                        'shaded' => 0,
+                        'width' => 540,
+                        'showLines' => 4,
+                        'xOrientation' => 'center'
+                    )
+            );
         }
-        
     }
 
     /*******************************************************
@@ -289,7 +374,7 @@ class recogidas_inforayunta extends fs_controller {
         $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
         
         //Aqui puedo hacer un bucle para buscar cada material en pagina completa
-        $lineas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], '', $_POST['orden']);
+        $lineas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], '', '',$_POST['orden']);
 
         if ($lineas) {
             $lineasrecogidas = count($lineas);
@@ -465,7 +550,7 @@ class recogidas_inforayunta extends fs_controller {
         header("Content-Disposition: attachment; filename=\"recogidas_ayunt.csv\"");
         echo "Fecha;Empresa;Material;Entrada;Salida;Tipo;Matricula;Ayuntamiento;Ecovidrio;Notas\n";
         
-        $recogidas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], '', $_POST['orden']);        
+        $recogidas = $this->recogidas_model->search('', $_POST['dfecha'], $_POST['hfecha'], '', '', $_POST['orden']);        
         if($recogidas){
             foreach($recogidas as $recog)
             {
