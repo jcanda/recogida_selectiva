@@ -95,7 +95,7 @@ class recogidas_inforayunta extends fs_controller {
                     $iglu_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 1);
                     $this->pdf_titulo = 'Recogidas ' . $empre->entidad_nombre . ': ' . $this->recogidas_model->nombre_material($mat) . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'];
                     //Llamo a la funcion para generar el listado pasandole lineas 
-                    $this->genera_pdf($lineas, $pdf_doc, FALSE);
+                    $this->genera_pdf($lineas, $pdf_doc, FALSE, $pap_sum, $iglu_sum);
                 }
             }
         }
@@ -129,7 +129,7 @@ class recogidas_inforayunta extends fs_controller {
                     $iglu_sum = $this->recogidas_model->sumabytipo($empre->entidad_nombre, $_POST['dfecha'], $_POST['hfecha'], $mat, 1);
                     $this->pdf_titulo = 'Recogidas ' . $this->recogidas_model->nombre_material($mat) . ': ' . $empre->entidad_nombre . ' del ' . $_POST['dfecha'] . ' al ' . $_POST['hfecha'];
                     //Llamo a la funcion para generar el listado pasandole lineas 
-                    $this->genera_pdf($lineas, $pdf_doc, TRUE);
+                    $this->genera_pdf($lineas, $pdf_doc, TRUE, $pap_sum, $iglu_sum);
                 }
             }
         }
@@ -174,7 +174,7 @@ class recogidas_inforayunta extends fs_controller {
      * 
      *******************************************************
      *       */    
-    private function genera_pdf(&$lineas, &$pdf_doc, $salidas = TRUE) {
+    private function genera_pdf(&$lineas, &$pdf_doc, $salidas = TRUE, $pap_sum = '', $iglu_sum = '') {
 
         $lineasrecogidas = count($lineas);
         $linea_actual = 0;
@@ -308,9 +308,23 @@ class recogidas_inforayunta extends fs_controller {
                         'col2' => '         Diferencia: ' . $this->show_numero($totalentra - $totalsal, 3)
                     );
 
+                $pap_totales = array(
+                        'col1' => '<b>Puerta a Puerta:  </b>',
+                        'totalentra' => $this->show_numero($pap_sum, 3),
+                        'totalsal' => ' ',
+                        'col2' => '  '
+                    );
+                $iglu_totales = array(
+                        'col1' => '<b>Iglú:  </b>',
+                        'totalentra' => $this->show_numero($iglu_sum, 3),
+                        'totalsal' => ' ',
+                        'col2' => '  '
+                    );                 
 
                 $pdf_doc->new_table();
                 $pdf_doc->add_table_header($header_totales);
+                if ($pap_sum!= '') $pdf_doc->add_table_row($pap_totales);
+                if ($iglu_sum!= '') $pdf_doc->add_table_row($iglu_totales);
                 $pdf_doc->save_table(
                         array(
                             'fontSize' => 8,
