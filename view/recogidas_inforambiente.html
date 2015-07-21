@@ -410,13 +410,16 @@
                         <div class="form-group col-md-6">
                             Residuos:
                             <select name="residuos" class="form-control">
-
+                                <option value=""></option>
+                                {loop="$fsc->doc_residuos"}
+                                    <option value="{$value->id}">{$value->tipo_material} ({$value->autorizacion})</option>
+                                {/loop}
                             </select>
                         </div>
                         <div class="form-group col-md-3">
                             Almacén:
                             <select name="almacen" class="form-control">
-                                <option value="poio">POIO</option>
+                                <option value="0002086">POIO</option>
                                 <option value="campino">CAMPIÑO</option>
                             </select>
                         </div>
