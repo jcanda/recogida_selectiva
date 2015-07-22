@@ -290,7 +290,7 @@ class recogida_diario extends fs_model {
             $sql .= " AND `ayunta_id` = " . $this->var2str($ayunta);
         }
 
-        $sql.= " ORDER BY " . $this->var2str($orden) . " ASC ";
+        $sql.= " ORDER BY " . $orden . " ASC ";
 
         $data = $this->db->select($sql . ";");
         if ($data) {
