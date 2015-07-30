@@ -26,7 +26,7 @@ class recogida_diario extends fs_model {
     public function __construct($a = FALSE) {
 
         parent::__construct('recogida_diario', 'plugins/recogida_selectiva/');
-
+        
         if ($a) {
             $this->recogida_id = intval($a['recogida_id']);
 
@@ -44,7 +44,7 @@ class recogida_diario extends fs_model {
             $this->ecovidrio = $this->str2bool($a['ecovidrio']);
             $this->notas = $this->no_html($a['notas']);
 
-            $this->entidad_nombre = $this->no_html($a['entidad_nombre']);
+            $this->entidad_nombre = $a['entidad_nombre'];
         }else {
             $this->recogida_id = 0;
             $this->fecha = date('d-m-Y');

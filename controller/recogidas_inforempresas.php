@@ -58,7 +58,7 @@ class recogidas_inforempresas extends fs_controller {
             $this->buscar_proveedor();
         }elseif(isset($_REQUEST['buscar_cliente'])) {
             $this->buscar_cliente();
-        }elseif($_POST['direccion_id']!=''){
+        }elseif(isset ($_POST['direccion_id']) AND $_POST['direccion_id']!=''){
             $this->pdf_filtro_entrada($_POST['codproveedor'], $_POST['direccion_id']);
         }       
         

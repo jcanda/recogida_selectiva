@@ -248,7 +248,7 @@ class recogida_certificado extends fs_model
     
     public function lineas_certificado($desde='', $hasta='', $tipo=0, $empresa_id='', $direccion_id=''){
         $lineas = new recogida_empresa();
-        return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, $direccion_id,'fecha');
+        return $lineas->search('', $desde, $hasta, $tipo, $empresa_id, $direccion_id,'','','fecha');
     }
     
     public function lista_anos($tipo = 0){
