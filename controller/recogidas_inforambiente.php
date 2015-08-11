@@ -376,7 +376,7 @@ class recogidas_inforambiente extends fs_controller {
              * 
              * ********************************************************************************************************************************************* */
         if ($_POST['almacen'] == '0002086')
-            $direccion_gestor = 'Avd. Peirao Besada, 45 (36163) POIO';
+            $direccion_gestor = 'Avd. Peirao Besada, 45 (36005) POIO';
         else
             $direccion_gestor = 'Rúa As Mámoas, 41 Parc-B81 (36158) MARCÓN'; 
         
@@ -813,7 +813,7 @@ class recogidas_inforambiente extends fs_controller {
                          * 
                          **************************************************************************************/
                         if ($almacen == '0002086')
-                            $direccion_gestor = 'Avd. Peirao Besada, 45 (36163) POIO';
+                            $direccion_gestor = 'Avd. Peirao Besada, 45 (36005) POIO';
                         else
                             $direccion_gestor = 'Rúa As Mámoas, 41 Parc-B81 (36158) MARCÓN';
                         
@@ -902,9 +902,9 @@ class recogidas_inforambiente extends fs_controller {
                         );                          
                     
                         /// ¿Añadimos la firma?
-                        if( file_exists('tmp/'.FS_TMP_NAME.'firma_luis.png') )
+                        if( file_exists('plugins/recogida_selectiva/view/img/firma_luis.png') )
                         {
-                            $pdf_doc->pdf->addPngFromFile('tmp/'.FS_TMP_NAME.'firma_luis.png', 350,120,157,49);
+                            $pdf_doc->pdf->addPngFromFile('plugins/recogida_selectiva/view/img/firma_luis.png', 350,120,119,59);
                         }        
                     }
                 }else {
