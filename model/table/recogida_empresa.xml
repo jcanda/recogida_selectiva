@@ -76,6 +76,12 @@
         <tipo>text</tipo>
         <nulo>YES</nulo> 
     </columna>
+    
+    <columna>
+        <nombre>n_cert_recogida</nombre>
+        <tipo>int(11)</tipo>
+        <nulo>YES</nulo>
+    </columna>    
 
     <restriccion>
         <nombre>recogida_empresa_pkey</nombre>

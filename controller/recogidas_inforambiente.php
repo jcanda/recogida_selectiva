@@ -100,7 +100,15 @@ class recogidas_inforambiente extends fs_controller {
             
             if ($certificado) {                
                 unlink('tmp/'.FS_TMP_NAME.'certificados/'.$certificado->link);
+                //Liberamos denuevo las lineas de recogidas_empresas
+                $recog_empresa = new recogida_empresa();
+                $lineas_empresa = $recog_empresa->get_lineas_cert($certificado->n_certificado);
                 
+                foreach ($lineas_empresa as $linea){
+                    $linea->n_cert_recogida = NULL;
+                    $linea->save();
+                }
+                //Ahora finalmente eliminamos el reg. del certificado
                 if ($certificado->delete()) {
                     $this->new_message('Certificado eliminado correctamente.');
                 } else
@@ -904,11 +912,11 @@ class recogidas_inforambiente extends fs_controller {
                         /// ¿Añadimos la firma?
                         if( file_exists('plugins/recogida_selectiva/view/img/firma_luis.png') )
                         {
-                            $pdf_doc->pdf->addPngFromFile('plugins/recogida_selectiva/view/img/firma_luis.png', 350,120,119,59);
+                            $pdf_doc->pdf->addPngFromFile('plugins/recogida_selectiva/view/img/firma_luis.png', 350,120,131,65);
                         }        
                     }
                 }else {
-                    $this->new_error_msg("No existen recogidas para este Productor entre estas fechas");
+                    $this->new_error_msg("No existen recogidas disponibles para este Productor entre estas fechas");
                     return FALSE;
                 }
                 //Guardamos el archivo pdf
@@ -916,12 +924,18 @@ class recogidas_inforambiente extends fs_controller {
                     if (!file_exists('tmp/' . FS_TMP_NAME . 'certificados'))
                         mkdir('tmp/' . FS_TMP_NAME . 'certificados');
 
-                    $pdf_doc->save('tmp/' . FS_TMP_NAME . 'certificados/' . $this->filename);
-
-                    $this->new_message('PDF generado ' . $this->filename);
+                    if ($pdf_doc->save('tmp/' . FS_TMP_NAME . 'certificados/' . $this->filename))
+                            $this->new_message('PDF generado ' . $this->filename);
+                    
+                    //Finalmente Marcamos las lineas de recogida_empresa como incluidas
+                    foreach ($lineas as $linea){
+                        $linea->n_cert_recogida = $_POST['n_certificado'];
+                        $linea->save();
+                    }
+                    
                     return TRUE;
                 }
-
+                
                 // ***********************************************************
                 // SALIDA
                 // Creamos el PDF y escribimos sus metadatos de SALIDA 

@@ -19,7 +19,8 @@ class recogida_empresa extends fs_model
    public $salida_empresa;
    public $tipo_id;
    public $matricula;
-   public $notas;    
+   public $notas;  
+   public $n_cert_recogida;
 
    public function __construct($a = FALSE) {
        
@@ -42,6 +43,7 @@ class recogida_empresa extends fs_model
             $this->tipo_id = intval($a['tipo_id']);
             $this->matricula = $this->no_html($a['matricula']);
             $this->notas = $this->no_html($a['notas']);
+            $this->n_cert_recogida = intval($a['n_cert_recogida']);
         }else{
             $this->recogida_id = 0;
             $this->fecha = date('d-m-Y');
@@ -55,6 +57,7 @@ class recogida_empresa extends fs_model
             $this->tipo_id = 0;
             $this->matricula = ''; 
             $this->notas = '';
+            $this->n_cert_recogida = NULL;
         }
     }
 
@@ -77,17 +80,19 @@ class recogida_empresa extends fs_model
                ler_ambiente = " . $this->var2str($this->ler_ambiente) .",  descrip_ambiente = " . $this->var2str($this->descrip_ambiente) . ", 
                entrada_empresa = " . $this->var2str($this->entrada_empresa) . ", salida_empresa = " . $this->var2str($this->salida_empresa) . ",
                tipo_id = " . $this->var2str($this->tipo_id) . ", matricula = " . $this->var2str($this->matricula) . ",    
-               notas = " . $this->var2str($this->notas) . " WHERE recogida_id = " . $this->var2str($this->recogida_id) . ";";
+               notas = " . $this->var2str($this->notas) . ", n_cert_recogida =  ".$this->var2str($this->n_cert_recogida)."
+                WHERE recogida_id = " . $this->var2str($this->recogida_id) . ";";
 
                 return $this->db->exec($sql);
                 
             } else {
-                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `articulo_id`,`ler_ambiente`,`descrip_ambiente`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`,`direccion_id`) 
+                $sql = "INSERT INTO recogida_empresa (`fecha`, `empresa_id`, `articulo_id`,`ler_ambiente`,`descrip_ambiente`, `entrada_empresa`, `salida_empresa`, `tipo_id`, `matricula`, `notas`,`direccion_id`, `n_cert_recogida`) 
                VALUES (" . $this->var2str($this->fecha) . "," . $this->var2str($this->empresa_id) . ",
                " . $this->var2str($this->articulo_id) . "," . $this->var2str($this->ler_ambiente) . ",
                " . $this->var2str($this->descrip_ambiente) . "," . $this->var2str($this->entrada_empresa) . ",
                " . $this->var2str($this->salida_empresa) . "," . $this->var2str($this->tipo_id) . ",
-               " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ",".$this->var2str($this->direccion_id).");";
+               " . $this->var2str($this->matricula) . "," . $this->var2str($this->notas) . ",
+               " .$this->var2str($this->direccion_id). ",".$this->var2str($this->n_cert_recogida).");";
 
                 if ($this->db->exec($sql)) {
                     $this->recogida_id = $this->db->lastval();
@@ -155,19 +160,32 @@ class recogida_empresa extends fs_model
       }
    }
    
-    public function get($id)
-   {
-      $sql = "SELECT * FROM `recogida_empresa` WHERE recogida_id = " . $this->var2str($id) . ";";
-        
-      $data = $this->db->select($sql);
-      
-      if($data)
-         return new recogida_empresa($data[0]);
-      else
-         return FALSE;       
-   }
-   
-   public function nombre_articulo($articulo_id = '') {
+    public function get($id) {
+        $sql = "SELECT * FROM `recogida_empresa` WHERE recogida_id = " . $this->var2str($id) . ";";
+
+        $data = $this->db->select($sql);
+
+        if ($data)
+            return new recogida_empresa($data[0]);
+        else
+            return FALSE;
+    }
+
+    public function get_lineas_cert($n_cert) {
+        $recogidas = array();
+
+        $sql = "SELECT * FROM `recogida_empresa` WHERE `n_cert_recogida` = " . $this->var2str($n_cert) . ";";
+        $data = $this->db->select($sql);
+
+        if ($data) {
+            foreach ($data as $d)
+                $recogidas[] = new recogida_empresa($d);
+        }
+
+        return $recogidas;
+    }
+
+    public function nombre_articulo($articulo_id = '') {
         if ($articulo_id != '') {
             $sql = "SELECT descripcion FROM `articulos` WHERE referencia = " . $this->var2str($articulo_id) . ";";
         } else {
@@ -283,4 +301,66 @@ class recogida_empresa extends fs_model
         return $entidadlist;
     }
 
+    public function search_cert($buscar = '', $desde = '', $hasta = '', $tipo = '', $empresa_id = '', $direccion_id = '', $articulo_id = '', $unicos = FALSE, $orden = "fecha") {
+        $entidadlist = array();
+        
+        if($unicos) {
+            $sql = "SELECT DISTINCT articulo_id
+                FROM `recogida_empresa`
+                WHERE recogida_id > 0";
+        } else {
+            $sql = "SELECT *
+                FROM `recogida_empresa`
+                WHERE recogida_id > 0";
+        }
+        
+        //Primero compruebo si hay texto a buscar
+        if ($buscar != '') {
+            $sql .= " AND ((upper(matricula) LIKE upper('%" . $buscar . "%')) OR (notas LIKE '%" . $buscar . "%')
+            OR (lower(descrip_ambiente) LIKE lower('%" . $buscar . "%')) OR (ler_ambiente LIKE '%" . $buscar . "%'))";
+        }
+
+        if ($desde != '') {
+            $sql .= " AND `fecha` >= " . $this->var2str($desde);
+        }
+
+        if ($hasta != '') {
+            $sql .= " AND `fecha` <= " . $this->var2str($hasta);
+        }
+
+        //Segundo compruebo el parametro tipo para filtrar
+        if ($tipo != '') {
+            //Si el parametro es 
+            $sql .= " AND `tipo_id` = " . $this->var2str($tipo);
+        }
+
+        //Tercero miro si se especifica para una empresa concreto
+        if ($empresa_id != '') {
+            $sql .= " AND `empresa_id` = " . $this->var2str($empresa_id);
+        }
+
+        //Cuarto miro si se especifica direccion una empresa concreto
+        if ($direccion_id != '') {
+            $sql .= " AND `direccion_id` = " . $this->var2str($direccion_id);
+        }
+
+        //Cuarto miro si se especifica articulo concreto
+        if ($articulo_id != '') {
+            $sql .= " AND `articulo_id` = " . $this->var2str($articulo_id);
+        }
+        
+        //quinto miro si la linea esta ya en un certificado
+        $sql .= " AND `n_cert_recogida` IS NULL OR `n_cert_recogida` = '0'";
+        
+        //Finalmente compruebo el orden
+        $sql.= " ORDER BY " . $orden . " DESC ";
+
+        $data = $this->db->select($sql . ";");
+        if ($data) {
+            foreach ($data as $d)
+                $entidadlist[] = new recogida_empresa($d);
+        }
+
+        return $entidadlist;
+    }    
 }

@@ -313,7 +313,7 @@ class recogidas_empresas extends fs_controller
         // agrega una recogida nueva
         //----------------------------------------------
         //Si la fecha no se detalla se selecciona la de hoy
-        if ($_POST['fecha'] == '') {
+        if (trim($_POST['fecha']) == '') {
             $this->recogidas_model->fecha = date('d-m-Y');
         } else
             $this->recogidas_model->fecha = $_POST['fecha'];
