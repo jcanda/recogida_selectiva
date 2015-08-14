@@ -544,6 +544,7 @@ class recogidas_inforambiente extends fs_controller {
                 $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
               
                 //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
+                $lineas = '';
                 $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor'], $_POST['direccion_id']);
 
                 if ($lineas) {
@@ -790,13 +791,14 @@ class recogidas_inforambiente extends fs_controller {
                             $pdf_doc->pdf->ezText($salto, 8);
                         } else
                         //Salto al final de cada pagina completa
-                            $pdf_doc->pdf->ezText("\n", 10);
+                            $pdf_doc->pdf->ezText("\n", 9);
                         
                         /* ******************************************************************************************************************************************                        
                          * 
                          * Creamos el bloque de los DATOS DE GESTOR
                          * 
                          **************************************************************************************/
+                        $pdf_doc->set_y(280);
                         $pdf_doc->new_table();
                         $pdf_doc->add_table_header(
                                 array(
@@ -865,6 +867,7 @@ class recogidas_inforambiente extends fs_controller {
 
 
 
+
 '
                                     
                                 )
@@ -912,7 +915,7 @@ class recogidas_inforambiente extends fs_controller {
                         /// ¿Añadimos la firma?
                         if( file_exists('plugins/recogida_selectiva/view/img/firma_luis.png') )
                         {
-                            $pdf_doc->pdf->addPngFromFile('plugins/recogida_selectiva/view/img/firma_luis.png', 350,120,131,65);
+                            $pdf_doc->pdf->addPngFromFile('plugins/recogida_selectiva/view/img/firma_luis.png', 350,117,131,65);
                         }        
                     }
                 }else {

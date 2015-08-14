@@ -37,12 +37,19 @@ class fs_pdf
       $this->pdf->selectFont("plugins/recogida_selectiva/extras/ezpdf/fonts/".$font.".afm");
    }
    
-   public function show()
-   {
-      $this->pdf->ezStream();
-   }
-   
-   public function save($filename)
+   public function show() {
+        $this->pdf->ezStream();
+    }
+
+    public function get_y() {
+        return $this->pdf->y;
+    }
+
+    public function set_y($y) {
+        $this->pdf->ezSetY($y);
+    }
+
+    public function save($filename)
    {
       if($filename)
       {
