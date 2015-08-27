@@ -479,7 +479,10 @@ class recogidas_inforambiente extends fs_controller {
         //----------------------------------------------
         // agrega un certificado nuevo
         //----------------------------------------------
-                
+        
+        //Cargamos modelo vacio
+        $this->recogidas_model = new recogida_certificado();  
+         
         //Si la fecha no se detalla se selecciona la de hoy
         if ($_POST['fecha'] == '') {
             $this->recogidas_model->fecha = date('d-m-Y');
@@ -544,8 +547,10 @@ class recogidas_inforambiente extends fs_controller {
                 $pdf_doc->pdf->addInfo('Author', $this->empresa->nombre);
               
                 //Capturo datos de DESDE y HASTA y  CONSULTO para lineas que me interesan
+                //Cargamos modelo vacio 
                 $lineas = '';
-                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $_POST['codproveedor'], $_POST['direccion_id']);
+                $this->recogidas_model = new recogida_certificado();
+                $lineas = $this->recogidas_model->lineas_certificado($_POST['desde'], $_POST['hasta'], $_POST['tipo_id'], $proveedor_select->codproveedor, $direccion_select->id);
 
                 if ($lineas) {
                     $lineasrecogidas = count($lineas);

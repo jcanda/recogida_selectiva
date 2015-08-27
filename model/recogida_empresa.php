@@ -302,7 +302,7 @@ class recogida_empresa extends fs_model
     }
 
     public function search_cert($buscar = '', $desde = '', $hasta = '', $tipo = '', $empresa_id = '', $direccion_id = '', $articulo_id = '', $unicos = FALSE, $orden = "fecha") {
-        $entidadlist = array();
+        $entidadlist2 = array();
         
         if($unicos) {
             $sql = "SELECT DISTINCT articulo_id
@@ -358,9 +358,9 @@ class recogida_empresa extends fs_model
         $data = $this->db->select($sql . ";");
         if ($data) {
             foreach ($data as $d)
-                $entidadlist[] = new recogida_empresa($d);
+                $entidadlist2[] = new recogida_empresa($d);
         }
 
-        return $entidadlist;
+        return $entidadlist2;
     }    
 }
