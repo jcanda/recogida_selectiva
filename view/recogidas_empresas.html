@@ -113,7 +113,7 @@
             <th class="text-left">Medio Ambiente</th>
             <th class="text-left">Entrada</th>
             <th class="text-left">Salida</th>
-            <th class="text-left">Notas</th> 
+            <th class="text-left">Nº Cert</th> 
          </tr>
       </thead>
       <!--{$total_entrada=0}-->
@@ -127,7 +127,7 @@
          <td>{$value->descrip_ambiente}</td>
          <td>{$fsc->show_numero($value->entrada_empresa)}</td>
          <td>{$fsc->show_numero($value->salida_empresa)}</td>       
-         <td>{$value->notas}</td>
+         <td>{$value->n_cert_recogida}</td>
          <!--{$total_entrada+=$value->entrada_empresa}-->
          <!--{$total_salida+=$value->salida_empresa}-->
       </tr>
